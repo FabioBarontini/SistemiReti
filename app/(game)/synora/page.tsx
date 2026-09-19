@@ -20,16 +20,12 @@ export default async function SynoraDashboard() {
   const hints = progress?.hints_used ?? 0
   const activeRoom = ROOMS[current - 1]
 
-  return <main className="synora-shell cinematic-dashboard"><SynoraIntro completed={completed}/><ReturnMemory completed={completed}/>
     <div className="grid-bg"/><div className="scanlines"/><div className="aurora aurora-a"/><div className="aurora aurora-b"/>
     <div className="city-dust" aria-hidden="true">{Array.from({length:34},(_,i)=><i key={i} style={{'--i':i} as React.CSSProperties}/>)}</div>
-    <header className="topbar cinematic-topbar">
       <div className="brand"><span className="brand-mark">S</span> SYNORA <i>//</i> CITY NETWORK</div>
       <div className="top-actions"><div className="status"><span className="dot"/> NETWORK {errors > 5 ? 'CRITICAL' : 'DEGRADED'}</div><LogoutButton/></div>
     </header>
 
-    <section className="dashboard cinematic-main">
-      <div className="cinematic-hero">
         <div className="hero-copy">
           <div className="eyebrow">SYNORA CITY CONTROL · {profile?.role === 'teacher' ? 'TEACHER NODE' : 'FIELD NODE'}</div>
           <h1>Il Piano<br/><em>regolatore</em></h1>

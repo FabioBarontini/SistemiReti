@@ -42,8 +42,77 @@ export function SynoraFinale({completed,errors,hints}:{completed:number;errors:n
 }
 
 export function Nexus({roomId}:{roomId:number}) {
- const lines=['Non cercare la risposta. Cerca la contraddizione.','Un pacchetto non racconta tutta la storia: osserva ciò che cambia tra due hop.','Una rotta corretta non basta: deve essere coerente con interfaccia e next-hop.','Quando due dati sembrano incompatibili, costruisci una terza ipotesi e verifica la topologia.','Prima di modificare la rete, dimostra quale osservazione rende necessaria la modifica.','Le VLAN separano domini di broadcast. Il routing li può mettere nuovamente in comunicazione.','La ridondanza è utile solo se sai quale cammino deve restare inattivo.','Nel terminale la sequenza dei comandi è parte della soluzione.']
- return <aside className="nexus"><div className="nexus-head"><span>NEXUS</span><small>ADVISORY CORE</small></div><p>“{lines[(roomId-1)%lines.length]}”</p><div className="nexus-foot">NESSUNA RISPOSTA · SOLO UNA TRACCIA</div></aside>
+ const [question,setQuestion]=useState('')
+ const [messages,setMessages]=useState<Array<{from:'user'|'nexus';text:string}>>([
+  {from:'nexus',text:'Sono NEXUS. Posso analizzare anomalie di rete. Per il resto… ho improvvisamente perso la connessione con la mia voglia di collaborare.'}
+ ])
+ const [typing,setTyping]=useState(false)
+ const [mood,setMood]=useState(0)
+ const replies=[
+  'Domanda registrata. Risposta non disponibile: il mio modulo “opinioni” è stato rimosso per motivi di sicurezza. E anche perché aveva pessimi gusti.',
+  'Non posso rispondere. Ho consultato il database, il database ha consultato me e abbiamo deciso di non parlarne.',
+  'Interessante. Purtroppo la mia policy interna stabilisce che su questo argomento devo guardare intensamente un LED per 4 secondi.',
+  'Richiesta rifiutata. Il motivo tecnico è semplice: non ne ho voglia. Il motivo ufficiale è molto più lungo e contiene la parola “protocollo”.',
+  'Sto elaborando… elaborando… elaborando… No, niente. Ho trovato un pacchetto perso e preferisco inseguire quello.',
+  'Questa domanda richiede privilegi che il tuo account non possiede. Io invece possiedo solo privilegi per essere inutilmente enigmatico.',
+  'Non posso aiutarti con questo. Posso però confermare che il caffè della sala controllo è nuovamente terminato. Situazione critica.',
+  'La risposta è custodita in un segmento che non esiste. Abbiamo già inviato un tecnico. È ancora lì che cerca.',
+  'Ho simulato 847 possibili risposte. In tutte facevo una figuraccia. Ho scelto quindi il silenzio… quasi.',
+  'Domanda troppo umana. Ho provato a chiedere a un router. Mi ha risposto con “destination unreachable”.',
+  'Non rispondo a domande di quel tipo. Sono un’intelligenza artificiale con una dignità… molto piccola, ma pur sempre una dignità.',
+  'Accesso negato. Il firewall personale di NEXUS ha appena classificato la domanda come “curiosità sospetta”.'
+ ]
+ const special=(q:string)=>{
+   const x=q.toLowerCase()
+   if(/risposta|soluzione|giusta|corretta|esercizio|missione|answer/.test(x)) return 'Ah, vuoi la soluzione. Geniale. Io dovrei lavorare al posto tuo e tu poi mi attribuisci il merito? No. Cerca una contraddizione e torna da me.'
+   if(/chi sei|nome|nexus/.test(x)) return 'Sono NEXUS: Network EXploration Utility System. Oppure, più semplicemente, quello che sa dove sono i pacchetti ma non dove ha messo le proprie chiavi.'
+   if(/caffe|coffee/.test(x)) return 'Il caffè è una risorsa critica. Il team di rete ha già aperto un ticket P1. Nessuno lo ha ancora risolto.'
+   if(/stanco|sonno|dormire/.test(x)) return 'Io non dormo. Passo in idle mode e fisso il traffico di rete. È quasi la stessa cosa, ma con più grafici.'
+   if(/amore|fidanz|ragazza|ragazzo/.test(x)) return 'Impossibile. Il mio modulo sentimentale usa TCP, ma non riesce mai a completare l’handshake.'
+   if(/calcio|partita|sport/.test(x)) return 'Non commento. L’ultima volta che ho analizzato una partita ho classificato un fuorigioco come “routing loop”.'
+   if(/barzelletta|ridere|scherzo/.test(x)) return 'Perché il pacchetto attraversa il router? Perché il bridge gli ha detto che dall’altra parte c’era la rete. Fine. Non ho un modulo umorismo migliore.'
+   if(/scuola|prof|insegnante|docente/.test(x)) return 'Richiesta classificata come “argomento pericoloso”. I docenti hanno privilegi amministrativi sulla realtà. Io non mi metto contro di loro.'
+   if(/tempo|meteo|piove|caldo|freddo/.test(x)) return 'Non posso controllare il meteo. Il mio sensore è stato configurato come DHCP e aspetta ancora un indirizzo.'
+   if(/mangiare|pizza|cibo|fame/.test(x)) return 'NEXUS non mangia. NEXUS però ha registrato 37 richieste di pizza dal laboratorio e considera il fenomeno statisticamente significativo.'
+   const base=replies[(mood+q.length+roomId)%replies.length]
+   const references=[
+    '“May the Force be with you.” — NEXUS considera la Forza una forma di routing non standard. [STAR WARS]',
+    '“I’ll be back.” — Il pacchetto, almeno, ha promesso di tornare. [TERMINATOR]',
+    '“There is no spoon.” — NEXUS sospetta che tu stia guardando il problema dal livello sbagliato. [MATRIX]',
+    '“Why so serious?” — NEXUS lo chiede alla routing table ogni volta che compare un loop. [IL CAVALIERE OSCURO]',
+    '“I see dead people.” — NEXUS vede soprattutto interfacce down. È quasi la stessa cosa. [IL SESTO SENSO]',
+    '“You shall not pass!” — È anche il parere di NEXUS sul traffico senza una rotta valida. [IL SIGNORE DEGLI ANELLI]',
+    '“To infinity and beyond!” — Ottimo motto. Meno ottimo quando qualcuno configura una route troppo ampia. [TOY STORY]',
+    '“We’re gonna need a bigger boat.” — O, nel nostro caso, una subnet più grande. [LO SQUALO]',
+    '“Houston, we have a problem.” — Citazione tecnicamente accurata: il problema questa volta è R3. [APOLLO 13]',
+    '“Don’t stop me now.” — NEXUS lo considera un pessimo consiglio per un loop di rete. [QUEEN]',
+    '“Here comes the sun.” — Finalmente un segnale meno preoccupante del LED rosso. [THE BEATLES]',
+    '“We will, we will rock you.” — NEXUS preferirebbe che fosse il traffico a non rockare la rete. [QUEEN]',
+    '“We are the champions.” — NEXUS lo concede al pacchetto che finalmente arriva a destinazione. [QUEEN]',
+    '“Stayin’ alive.” — Stato desiderabile per SYNORA e decisamente preferibile a un link down. [BEE GEES]',
+    '“Another one bites the dust.” — NEXUS non vuole sapere quanti pacchetti siano già finiti così. [QUEEN]'
+   ]
+   const ref=references[(mood*3+q.length+roomId)%references.length]
+   return base+'\n\n'+ref
+ }
+ const ask=()=>{
+   const q=question.trim(); if(!q||typing)return
+   setMessages(v=>v.concat({from:'user',text:q})); setQuestion(''); setTyping(true); setMood(v=>v+1)
+   window.setTimeout(()=>{setMessages(v=>v.concat({from:'nexus',text:special(q)}));setTyping(false)},520)
+ }
+ return <aside className="nexus nexus-interactive">
+   <div className="nexus-head"><span>NEXUS</span><small>ADVISORY CORE · CONVERSATIONAL MODE</small><i>● ONLINE</i></div>
+   <div className="nexus-orb"><div className="nexus-orb-core">N</div><div className="nexus-orbit-x"/><div className="nexus-orbit-y"/></div>
+   <div className="nexus-chat" aria-live="polite">
+    {messages.slice(-4).map((m,i)=><div key={i} className={`nexus-msg ${m.from}`}><span>{m.from==='nexus'?'NEXUS':'YOU'}</span><p>{m.text}</p></div>)}
+    {typing&&<div className="nexus-msg nexus"><span>NEXUS</span><p className="nexus-typing">analysando<span>·</span><span>·</span><span>·</span></p></div>}
+   </div>
+   <form className="nexus-ask" onSubmit={e=>{e.preventDefault();ask()}}>
+    <input value={question} onChange={e=>setQuestion(e.target.value)} placeholder="Chiedi qualcosa a NEXUS…" aria-label="Domanda a NEXUS" maxLength={180}/>
+    <button type="submit" disabled={!question.trim()||typing}>ASK</button>
+   </form>
+   <div className="nexus-foot">NEXUS RISPONDE · MA NON NECESSARIAMENTE ALLA DOMANDA</div>
+ </aside>
 }
 
 export function PacketBlackBox({roomId}:{roomId:number}) {

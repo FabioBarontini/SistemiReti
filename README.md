@@ -37,12 +37,10 @@ Le prove vengono validate server-side e lo stato di avanzamento è persistito in
 - NEXUS come assistente narrativo che non fornisce direttamente le risposte.
 - Black Box con animazione del viaggio del pacchetto.
 - Cronometro narrativo di missione.
-- Finale cinematografico e profilo narrativo variabile al completamento della città.
 - Atmosfere grafiche distinte per i distretti.
 - Helios Corp mantiene dossier, sospettati, timeline, log ed evidenze come caso investigativo.
 
 ## V8 — Experience Layer
-- Intro cinematica all'ingresso, con stato della rete e accesso alla città.
 - Network Weather, presenza fisica di NEXUS e comunicazioni radio.
 - Blackout Mode e Packet Vision per rendere visibili diagnostica, forwarding e incapsulamento.
 - Incident Log, oggetti nascosti e frammenti di meta-storia distribuiti tra i distretti.
