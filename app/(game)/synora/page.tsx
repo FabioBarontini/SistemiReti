@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { ROOMS } from '@/lib/game'
 import LogoutButton from '@/components/logout-button'
@@ -30,7 +31,7 @@ export default async function SynoraDashboard() {
             <path d="M315 235 L420 365 L580 490 L760 350 L700 215" fill="none" stroke="rgba(113,230,255,.18)" strokeWidth="1" strokeDasharray="2 9"/>
           </svg>
           <div className="map-watermark">SYNORA</div>
-          {ROOMS.map((room,i)=>{const unlocked=room.id<=current; const done=room.id<current || room.id<=completed; return <a key={room.id} className={`node ${unlocked?'active':'locked'} ${done?'done':''}`} style={{left:`${POS[i][0]}%`,top:`${POS[i][1]}%`}} href={unlocked?`/synora/room/${room.id}`:'#'} onClick={e=>{if(!unlocked)e.preventDefault()}}><div className="node-ring"><div className="core">{done?'✓':String(room.id).padStart(2,'0')}</div></div><span>{room.name}</span><small>{room.topic}</small></a>})}
+          {ROOMS.map((room,i)=>{const unlocked=room.id<=current; const done=room.id<current || room.id<=completed; const content=<><div className="node-ring"><div className="core">{done?'✓':String(room.id).padStart(2,'0')}</div></div><span>{room.name}</span><small>{room.topic}</small></>; return unlocked ? <Link key={room.id} className={`node active ${done?'done':''}`} style={{left:`${POS[i][0]}%`,top:`${POS[i][1]}%`}} href={`/synora/room/${room.id}`}>{content}</Link> : <div key={room.id} className={`node locked ${done?'done':''}`} style={{left:`${POS[i][0]}%`,top:`${POS[i][1]}%`}} aria-disabled="true">{content}</div>})}
         </div>
       </div>
       <div className="progress"><div className="stat"><span>Distretti ripristinati</span><b>{completed}<em>/08</em></b></div><div className="stat"><span>Fronte attuale</span><b>0{current}</b></div><div className="stat"><span>Errori registrati</span><b>{progress?.errors ?? 0}</b></div><div className="stat"><span>Indizi consumati</span><b>{progress?.hints_used ?? 0}</b></div></div>
