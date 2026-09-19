@@ -75,25 +75,7 @@ export function Nexus({roomId}:{roomId:number}) {
    if(/tempo|meteo|piove|caldo|freddo/.test(x)) return 'Non posso controllare il meteo. Il mio sensore è stato configurato come DHCP e aspetta ancora un indirizzo.'
    if(/mangiare|pizza|cibo|fame/.test(x)) return 'NEXUS non mangia. NEXUS però ha registrato 37 richieste di pizza dal laboratorio e considera il fenomeno statisticamente significativo.'
    const base=replies[(mood+q.length+roomId)%replies.length]
-   const references=[
-    '“May the Force be with you.” — NEXUS considera la Forza una forma di routing non standard. [STAR WARS]',
-    '“I’ll be back.” — Il pacchetto, almeno, ha promesso di tornare. [TERMINATOR]',
-    '“There is no spoon.” — NEXUS sospetta che tu stia guardando il problema dal livello sbagliato. [MATRIX]',
-    '“Why so serious?” — NEXUS lo chiede alla routing table ogni volta che compare un loop. [IL CAVALIERE OSCURO]',
-    '“I see dead people.” — NEXUS vede soprattutto interfacce down. È quasi la stessa cosa. [IL SESTO SENSO]',
-    '“You shall not pass!” — È anche il parere di NEXUS sul traffico senza una rotta valida. [IL SIGNORE DEGLI ANELLI]',
-    '“To infinity and beyond!” — Ottimo motto. Meno ottimo quando qualcuno configura una route troppo ampia. [TOY STORY]',
-    '“We’re gonna need a bigger boat.” — O, nel nostro caso, una subnet più grande. [LO SQUALO]',
-    '“Houston, we have a problem.” — Citazione tecnicamente accurata: il problema questa volta è R3. [APOLLO 13]',
-    '“Don’t stop me now.” — NEXUS lo considera un pessimo consiglio per un loop di rete. [QUEEN]',
-    '“Here comes the sun.” — Finalmente un segnale meno preoccupante del LED rosso. [THE BEATLES]',
-    '“We will, we will rock you.” — NEXUS preferirebbe che fosse il traffico a non rockare la rete. [QUEEN]',
-    '“We are the champions.” — NEXUS lo concede al pacchetto che finalmente arriva a destinazione. [QUEEN]',
-    '“Stayin’ alive.” — Stato desiderabile per SYNORA e decisamente preferibile a un link down. [BEE GEES]',
-    '“Another one bites the dust.” — NEXUS non vuole sapere quanti pacchetti siano già finiti così. [QUEEN]'
-   ]
-   const ref=references[(mood*3+q.length+roomId)%references.length]
-   return base+'\n\n'+ref
+   return base
  }
  const ask=()=>{
    const q=question.trim(); if(!q||typing)return
