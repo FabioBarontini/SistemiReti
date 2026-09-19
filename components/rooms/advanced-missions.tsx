@@ -1,90 +1,191 @@
 'use client'
-import React from 'react'
+import React, {useState} from 'react'
 
 type Answers = Record<string,string>
-function Panel({title,children}:{title:string;children:React.ReactNode}){return <section className="challenge-panel mission-panel"><div className="panel-head"><span>{title}</span><i/></div>{children}</section>}
-function Choice({active,children,onClick}:{active:boolean;children:React.ReactNode;onClick:()=>void}){return <button type="button" className={`choice-card ${active?'selected':''}`} onClick={onClick}>{children}</button>}
+function Panel({title,children,className='' }:{title:string;children:React.ReactNode;className?:string}){return <section className={`challenge-panel mission-panel ${className}`}><div className="panel-head"><span>{title}</span><i/></div>{children}</section>}
 function Input({value,onChange,placeholder}:{value:string;onChange:(v:string)=>void;placeholder?:string}){return <input className="answer-input" value={value||''} onChange={e=>onChange(e.target.value)} placeholder={placeholder}/>} 
-function Select({value,onChange,options}:{value:string;onChange:(v:string)=>void;options:string[]}){return <select value={value||''} onChange={e=>onChange(e.target.value)}><option value="">scegli…</option>{options.map(x=><option key={x}>{x}</option>)}</select>}
+function Evidence({active,children,onClick}:{active:boolean;children:React.ReactNode;onClick:()=>void}){return <button type="button" className={`evidence-card ${active?'selected':''}`} onClick={onClick}><span className="evidence-check">{active?'✓':'+'}</span>{children}</button>}
+function CodeBox({children}:{children:React.ReactNode}){return <pre className="mission-code">{children}</pre>}
+function Stepper({value,onChange,max=6}:{value:string;onChange:(v:string)=>void;max?:number}){return <div className="stepper">{Array.from({length:max},(_,i)=>String(i+1)).map(n=><button type="button" key={n} className={value===n?'selected':''} onClick={()=>onChange(n)}>{n}</button>)}</div>}
 
 export default function AdvancedMissions({roomId,a,set}:{roomId:number;a:Answers;set:(k:string,v:string)=>void}){
  const p=(n:number)=>`m${roomId}_${n}`
- const common = (n:number,title:string,body:React.ReactNode,field:string,options:string[]) => <Panel title={`MISSIONE ${String(n).padStart(2,'0')} · ${title}`}><p className="instruction">{body}</p><Select value={a[p(n)]||''} onChange={v=>set(p(n),v)} options={options}/></Panel>
+ const toggle=(k:string)=>set(k,a[k]==='1'?'':'1')
+
  if(roomId===1)return <>
-  {common(3,'Header che cambia',<>Un pacchetto attraversa un router. Quale coppia di indirizzi viene riscritta normalmente a livello 2 sul nuovo collegamento, mentre gli indirizzi IP di destinazione restano quelli del percorso end-to-end?</>, 'x',['MAC sorgente e MAC destinazione','IP sorgente e IP destinazione','Porte TCP sorgente e destinazione','TTL e porta 443'])}
-  {common(4,'Porta 443',<>La porta 443 compare nell'header TCP di una connessione HTTPS. A quale livello appartiene questa informazione?</>, 'x',['Trasporto','Rete','Collegamento dati','Applicazione'])}
-  {common(5,'PDU corretta',<>Il payload applicativo viene incapsulato da TCP e poi da IP. Qual è la sequenza PDU corretta per questi tre passaggi?</>, 'x',['Messaggio → Segmento → Pacchetto','Pacchetto → Segmento → Messaggio','Frame → Pacchetto → Segmento','Messaggio → Pacchetto → Frame'])}
-  {common(6,'Router o switch?',<>Un dispositivo decide il forwarding osservando l'indirizzo IP di destinazione e la propria tabella di routing. Quale dispositivo sta operando in questo scenario?</>, 'x',['Router','Switch Layer 2','Hub','Access point'])}
-  {common(7,'Decapsulazione',<>Un host riceve un frame Ethernet contenente un pacchetto IP e un segmento TCP. Quale ordine descrive la rimozione degli header?</>, 'x',['Ethernet → IP → TCP','TCP → IP → Ethernet','IP → Ethernet → TCP','Ethernet → TCP → IP'])}
-  {common(8,'Incoerenza',<>Una cattura mostra: MAC destinazione, IP destinazione, porta TCP 443. Quale associazione è sicuramente errata?</>, 'x',['MAC → collegamento dati','IP → rete','porta 443 → trasporto','porta 443 → rete'])}
-  {common(9,'Stesso IP, nuovo frame',<>Il pacchetto passa da R1 a R2. Sul nuovo segmento Ethernet, quale informazione deve essere ricostruita per il nuovo collegamento?</>, 'x',['Header Ethernet','Indirizzo IP di destinazione','Porta TCP destinazione','URL richiesto'])}
-  {common(10,'Diagnosi finale',<>Un browser invia una richiesta HTTPS. Quale catena è coerente con il modello TCP/IP a quattro livelli usato nel corso?</>, 'x',['HTTPS → TCP → IP → Ethernet','HTTPS → IP → TCP → Ethernet','TCP → HTTPS → IP → Ethernet','Ethernet → IP → TCP → HTTPS'])}
+  <Panel title="MISSIONE 03 · IL FRAME CHE CAMBIA">
+   <p className="instruction">PC-A invia un pacchetto al server remoto. Il pacchetto attraversa R1. Non limitarti a nominare un livello: ricostruisci cosa succede al frame sul nuovo segmento Ethernet.</p>
+   <CodeBox>PC-A → SW → R1 → R2 → SERVER
+
+Prima del router:
+MAC src = AA:AA:AA:10:10:10
+MAC dst = 00:11:22:33:44:55
+IP dst  = 172.16.40.20
+
+Dopo il router, sul link R1→R2:
+MAC dst = ?
+IP dst  = ?</CodeBox>
+   <div className="answer-pair"><label>Quale informazione viene ricostruita a ogni nuovo collegamento?</label><Input value={a[p(3)]||''} onChange={v=>set(p(3),v)} placeholder="nome dell'header…"/><label>Gli IP di destinazione cambiano durante il semplice forwarding?</label><Input value={a[p(3)+'b']||''} onChange={v=>set(p(3)+'b',v)} placeholder="sì / no + motivo"/></div>
+  </Panel>
+  <Panel title="MISSIONE 04 · PORTA 443 SOTTO INTERROGATORIO">
+   <p className="instruction">Una cattura mostra TCP dst=443. Spiegate la collocazione della porta senza confondere protocollo applicativo e livello che trasporta l'informazione.</p>
+   <CodeBox>Ethernet {`{`} IP {`{`} TCP {`{`} dst port 443 {`}`} {`}`} {`}`}</CodeBox>
+   <Input value={a[p(4)]||''} onChange={v=>set(p(4),v)} placeholder="livello + spiegazione breve"/>
+  </Panel>
+  <Panel title="MISSIONE 05 · LA CATENA DI INCAPSULAMENTO">
+   <p className="instruction">Scrivete la catena completa dal dato applicativo al frame Ethernet, usando esattamente le PDU corrette per TCP/IP.</p>
+   <Input value={a[p(5)]||''} onChange={v=>set(p(5),v)} placeholder="Messaggio → … → … → …"/>
+  </Panel>
+  <Panel title="MISSIONE 06 · CHI DECIDE LA STRADA">
+   <p className="instruction">R1 riceve un pacchetto con destinazione 10.20.30.77. Deve consultare una struttura dati per decidere il forwarding. Indicate dispositivo e struttura consultata.</p>
+   <Input value={a[p(6)]||''} onChange={v=>set(p(6),v)} placeholder="dispositivo + struttura"/>
+  </Panel>
+  <Panel title="MISSIONE 07 · DECOSTRUZIONE">
+   <p className="instruction">Il server riceve un frame Ethernet contenente IP e TCP. Scrivete l'ordine con cui gli involucri vengono rimossi.</p>
+   <Input value={a[p(7)]||''} onChange={v=>set(p(7),v)} placeholder="Ethernet → … → …"/>
+  </Panel>
+  <Panel title="MISSIONE 08 · TROVA L'INCOERENZA">
+   <p className="instruction">Individuate l'unico elemento collocato nel livello sbagliato e spiegate la correzione.</p>
+   <CodeBox>MAC → Collegamento dati
+IP → Rete
+TCP 443 → Rete
+HTTPS → Applicazione</CodeBox>
+   <Input value={a[p(8)]||''} onChange={v=>set(p(8),v)} placeholder="elemento errato → collocazione corretta"/>
+  </Panel>
+  <Panel title="MISSIONE 09 · STESSO IP, NUOVO FRAME">
+   <p className="instruction">Spiegate perché il pacchetto IP può mantenere la destinazione mentre il frame Ethernet viene ricostruito sul collegamento successivo.</p>
+   <Input value={a[p(9)]||''} onChange={v=>set(p(9),v)} placeholder="spiegazione tecnica"/>
+  </Panel>
+  <Panel title="MISSIONE 10 · AUTOPSIA DELLA CATTURA">
+   <p className="instruction">Ricostruite la comunicazione completa partendo da questi indizi. Non basta elencare i livelli: indicate anche il protocollo di trasporto.</p>
+   <CodeBox>dst TCP = 443
+protocollo applicativo = HTTPS
+IP src = 192.168.10.20
+IP dst = 172.16.40.20
+MAC dst sul primo link = gateway</CodeBox>
+   <Input value={a[p(10)]||''} onChange={v=>set(p(10),v)} placeholder="HTTPS → … → … → Ethernet + spiegazione"/>
+  </Panel>
  </>
+
  if(roomId===2)return <>
-  {common(3,'Host massimi',<>Una subnet /27 standard IPv4 deve ospitare host ordinari. Quanti indirizzi host utilizzabili ha?</>, 'x',['30','32','28','62'])}
-  {common(4,'Broadcast /26',<>Qual è il broadcast della subnet 192.168.40.128/26?</>, 'x',['192.168.40.191','192.168.40.192','192.168.40.255','192.168.40.129'])}
-  {common(5,'Appartenenza',<>A quale subnet appartiene 192.168.40.190 se le subnet sono 192.168.40.128/26 e 192.168.40.192/27?</>, 'x',['192.168.40.128/26','192.168.40.192/27','192.168.40.0/25','nessuna'])}
-  {common(6,'Allineamento',<>Per una /27, quale valore dell'ultimo ottetto è un indirizzo di rete valido?</>, 'x',['192','194','198','201'])}
-  {common(7,'Progettazione',<>Una rete deve contenere 50 host ordinari. Qual è il prefisso minimo che soddisfa 2^b ≥ H+2?</>, 'x',['/26','/27','/25','/28'])}
-  {common(8,'Ultimo host',<>Qual è l'ultimo host utilizzabile di 10.10.8.64/27?</>, 'x',['10.10.8.94','10.10.8.95','10.10.8.96','10.10.8.93'])}
-  {common(9,'Overlap',<>Hai 10.0.0.0/25 e 10.0.0.96/27. Il secondo blocco è contenuto nel primo: quale proprietà è violata?</>, 'x',['assenza di sovrapposizione','ordine decrescente delle richieste','uso di gateway','CIDR'])}
-  {common(10,'Crescita',<>Un reparto richiede 62 host ordinari. Quale subnet è sufficiente senza spreco di un intero /24?</>, 'x',['/26','/27','/25','/28'])}
+  <Panel title="MISSIONE 03 · IL BLOCCO DA 32">
+   <p className="instruction">Un progettista deve scegliere l'indirizzo di rete di una /27. Tra i candidati, solo uno è allineato correttamente.</p><CodeBox>Candidati:
+192.168.40.192
+192.168.40.194
+192.168.40.198
+192.168.40.201</CodeBox><Input value={a[p(3)]||''} onChange={v=>set(p(3),v)} placeholder="network corretta + calcolo del block size"/></Panel>
+  <Panel title="MISSIONE 04 · CONFINE /26"><p className="instruction">Calcolate il broadcast di 192.168.40.128/26 e spiegate come avete ricavato il confine.</p><Input value={a[p(4)]||''} onChange={v=>set(p(4),v)} placeholder="broadcast + ragionamento"/></Panel>
+  <Panel title="MISSIONE 05 · HOST O RETE?"><p className="instruction">Avete 192.168.40.190, con reti 192.168.40.128/26 e 192.168.40.192/27. Stabilite dove appartiene e dimostratelo con gli intervalli.</p><Input value={a[p(5)]||''} onChange={v=>set(p(5),v)} placeholder="subnet + intervallo"/></Panel>
+  <Panel title="MISSIONE 06 · ALLINEAMENTO"><p className="instruction">Perché 192.168.40.192 è un network address valido per /27 mentre .194 non lo è?</p><Input value={a[p(6)]||''} onChange={v=>set(p(6),v)} placeholder="spiegazione con multipli"/></Panel>
+  <Panel title="MISSIONE 07 · PROGETTO MINIMO"><p className="instruction">Un reparto richiede 50 host ordinari. Calcolate il prefisso minimo e mostrate il confronto con il prefisso immediatamente più piccolo.</p><Input value={a[p(7)]||''} onChange={v=>set(p(7),v)} placeholder="/xx + 2^n ≥ H+2"/></Panel>
+  <Panel title="MISSIONE 08 · ULTIMO HOST"><p className="instruction">Per 10.10.8.64/27 calcolate network, broadcast e ultimo host. Inserite tutti e tre.</p><Input value={a[p(8)]||''} onChange={v=>set(p(8),v)} placeholder="network | broadcast | ultimo host"/></Panel>
+  <Panel title="MISSIONE 09 · OVERLAP"><p className="instruction">10.0.0.0/25 e 10.0.0.96/27 vengono assegnate a due reparti distinti. Dimostrate perché il piano è invalido.</p><Input value={a[p(9)]||''} onChange={v=>set(p(9),v)} placeholder="intervalli + tipo di errore"/></Panel>
+  <Panel title="MISSIONE 10 · CRESCITA SENZA /24"><p className="instruction">Un reparto passa a 62 host ordinari. Determinate il prefisso minimo, gli indirizzi totali e gli host utilizzabili.</p><Input value={a[p(10)]||''} onChange={v=>set(p(10),v)} placeholder="/xx | totali | utilizzabili"/></Panel>
  </>
+
  if(roomId===3)return <>
-  {common(3,'Mask /22',<>Qual è la maschera decimale di /22?</>, 'x',['255.255.252.0','255.255.255.0','255.255.248.0','255.255.252.255'])}
-  {common(4,'Primo esterno',<>Dopo 172.16.32.0/22, qual è la prima rete /24 immediatamente successiva?</>, 'x',['172.16.36.0/24','172.16.35.0/24','172.16.40.0/24','172.16.31.0/24'])}
-  {common(5,'Longer match',<>Rotte /8, /16 e /24 corrispondono tutte alla destinazione 10.20.30.77. Quale viene scelta?</>, 'x',['/24','/16','/8','default /0'])}
-  {common(6,'Blocco valido',<>Quale insieme di quattro /24 è aggregabile in un /22 correttamente allineato?</>, 'x',['192.168.8–11','192.168.9–12','192.168.10–13','192.168.12–15'])}
-  {common(7,'Troppo largo',<>Una supernet copre reti desiderate ma anche una rete estranea. Qual è il rischio principale di annunciarla?</>, 'x',['Traffico verso la rete estranea può seguire un percorso non appropriato','Le porte TCP cambiano','Il MAC diventa pubblico','Il DHCP si disattiva'])}
-  {common(8,'Prefisso comune',<>Gli indirizzi 10.20.32.0/24 e 10.20.33.0/24 hanno quale aggregazione minima valida?</>, 'x',['10.20.32.0/23','10.20.32.0/24','10.20.33.0/23','10.20.0.0/16'])}
-  {common(9,'Compressione',<>Qual è lo scopo principale della route summarization?</>, 'x',['Ridurre il numero di prefissi pubblicizzati','Aumentare il numero di broadcast','Sostituire TCP','Cambiare gli indirizzi MAC'])}
-  {common(10,'Frontiera',<>Una rotta 172.16.32.0/22 comprende quattro reti /24. Quanti indirizzi totali contiene?</>, 'x',['1024','512','2048','256'])}
+  <Panel title="MISSIONE 03 · MASCHERA /22"><p className="instruction">Convertite /22 in decimale puntato e indicate il block size nell'ottetto interessante.</p><Input value={a[p(3)]||''} onChange={v=>set(p(3),v)} placeholder="255.x.x.x | block size"/></Panel>
+  <Panel title="MISSIONE 04 · DOPO LA SUPERNET"><p className="instruction">172.16.32.0/22 contiene quattro /24. Qual è la prima rete /24 esterna? Dimostrate l'intervallo coperto.</p><Input value={a[p(4)]||''} onChange={v=>set(p(4),v)} placeholder="rete successiva + intervallo"/></Panel>
+  <Panel title="MISSIONE 05 · LONGEST PREFIX MATCH"><p className="instruction">Per 10.20.30.77 esistono /8, /16 e /24. Scrivete quale viene scelta e perché.</p><Input value={a[p(5)]||''} onChange={v=>set(p(5),v)} placeholder="prefisso + regola"/></Panel>
+  <Panel title="MISSIONE 06 · AGGREGAZIONE VALIDATA"><p className="instruction">Confrontate i blocchi 192.168.8–11, 9–12, 10–13 e 12–15. Identificate quello aggregabile in /22 e spiegate allineamento e contiguità.</p><Input value={a[p(6)]||''} onChange={v=>set(p(6),v)} placeholder="blocco + spiegazione"/></Panel>
+  <Panel title="MISSIONE 07 · ROUTE LEAK"><p className="instruction">Una supernet copre una rete estranea. Spiegate quale errore di progettazione può produrre nell'instradamento.</p><Input value={a[p(7)]||''} onChange={v=>set(p(7),v)} placeholder="conseguenza sul traffico"/></Panel>
+  <Panel title="MISSIONE 08 · DUE /24, UNA ROTTA"><p className="instruction">10.20.32.0/24 e 10.20.33.0/24 devono essere riassunte. Calcolate la supernet e il numero di indirizzi totali.</p><Input value={a[p(8)]||''} onChange={v=>set(p(8),v)} placeholder="supernet | indirizzi"/></Panel>
+  <Panel title="MISSIONE 09 · PERCHÉ AGGREGARE?"><p className="instruction">Non indicate semplicemente “ridurre la tabella”. Spiegate quale effetto ha la summarization sugli annunci di routing.</p><Input value={a[p(9)]||''} onChange={v=>set(p(9),v)} placeholder="effetto tecnico"/></Panel>
+  <Panel title="MISSIONE 10 · 172.16.32.0/22 SOTTO ESAME"><p className="instruction">Calcolate network, broadcast, numero di /24 contenute e primo /24 esterno.</p><Input value={a[p(10)]||''} onChange={v=>set(p(10),v)} placeholder="network | broadcast | /24 | esterno"/></Panel>
  </>
+
  if(roomId===4)return <>
-  {common(4,'Default route',<>Se nessuna rotta specifica corrisponde alla destinazione, quale voce può essere usata come ultima risorsa?</>, 'x',['0.0.0.0/0','255.255.255.255/32','127.0.0.0/8','224.0.0.0/4'])}
-  {common(5,'TTL',<>Un router inoltra un pacchetto IP con TTL 3. Dopo il forwarding, quale valore porta normalmente avanti il pacchetto?</>, 'x',['2','3','4','0'])}
-  {common(6,'Traceroute',<>Nel traceroute, una risposta Time Exceeded da un router indica principalmente che…</>, 'x',['il TTL è scaduto durante il percorso','il DNS è sempre guasto','la destinazione ha risposto con HTTP 404','il MAC è duplicato'])}
-  {common(7,'Next-hop',<>Una rotta statica è 192.168.20.0/24 via 10.0.1.2. Cosa rappresenta 10.0.1.2?</>, 'x',['Il router next-hop','La rete destinazione','Il broadcast','La porta TCP'])}
-  {common(8,'Rete irraggiungibile',<>Una tabella contiene una rotta specifica ma l'interfaccia verso il next-hop è down. Quale elemento va verificato per primo?</>, 'x',['Connettività del next-hop/interfaccia','Il browser','Il DNS pubblico','Il MAC del server remoto'])}
-  {common(9,'Hop mancante',<>Un hop di traceroute mostra * * *. Quale conclusione è lecita senza altre evidenze?</>, 'x',['Quel probe non ha ricevuto risposta entro il timeout','Quel router non esiste sicuramente','La rotta è sicuramente assente','Il server è spento sicuramente'])}
-  {common(10,'Diagnosi incrociata',<>Se ping verso il gateway locale funziona ma traceroute si interrompe dopo il router R2, quale informazione è più utile per il passo successivo?</>, 'x',['Routing table e interfaccia del router successivo','Il colore del cavo','La porta 443 del browser','Il nome host del PC'])}
+  <Panel title="MISSIONE 04 · LA DEFAULT NON È UNA SCORCIATOIA"><p className="instruction">Una tabella contiene rotte specifiche e 0.0.0.0/0. Spiegate in quali condizioni viene utilizzata la default route.</p><CodeBox>10.20.30.0/24 via 10.0.1.2
+10.30.0.0/16 via 10.0.2.2
+0.0.0.0/0 via 10.0.0.2</CodeBox><Input value={a[p(4)]||''} onChange={v=>set(p(4),v)} placeholder="regola di selezione"/></Panel>
+  <Panel title="MISSIONE 05 · TTL RESIDUO"><p className="instruction">Un pacchetto parte con TTL=3 e attraversa due router. Calcolate il TTL dopo il secondo forwarding e indicate cosa accadrebbe al successivo.</p><Input value={a[p(5)]||''} onChange={v=>set(p(5),v)} placeholder="TTL residuo | conseguenza"/></Panel>
+  <Panel title="MISSIONE 06 · TIME EXCEEDED"><p className="instruction">Spiegate cosa permette a traceroute di scoprire quando un router restituisce ICMP Time Exceeded.</p><Input value={a[p(6)]||''} onChange={v=>set(p(6),v)} placeholder="TTL + ICMP + hop"/></Panel>
+  <Panel title="MISSIONE 07 · NEXT-HOP NASCOSTO"><p className="instruction">Rotta: 192.168.20.0/24 via 10.0.1.2. Spiegate cosa rappresenta 10.0.1.2 e perché non è l'IP della rete destinazione.</p><Input value={a[p(7)]||''} onChange={v=>set(p(7),v)} placeholder="definizione + spiegazione"/></Panel>
+  <Panel title="MISSIONE 08 · L'INTERFACCIA PRIMA DI TUTTO"><p className="instruction">La route esiste, ma il link verso il next-hop è down. Elencate le verifiche da fare in ordine logico.</p><Input value={a[p(8)]||''} onChange={v=>set(p(8),v)} placeholder="1. … 2. … 3. …"/></Panel>
+  <Panel title="MISSIONE 09 · L'HOP FANTASMA"><p className="instruction">Traceroute: 1=R1, 2=R2, 3=* * *, 4=R4. Interpretate il terzo hop senza concludere che il router sia assente.</p><Input value={a[p(9)]||''} onChange={v=>set(p(9),v)} placeholder="interpretazione precisa"/></Panel>
+  <Panel title="MISSIONE 10 · AUTOPSIA DEL PERCORSO"><p className="instruction">Gateway locale raggiungibile, R2 raggiungibile, poi nessuna risposta. Indicate quali due fonti consultare per restringere il guasto e cosa cerchereste.</p><Input value={a[p(10)]||''} onChange={v=>set(p(10),v)} placeholder="due fonti + evidenza da cercare"/></Panel>
  </>
+
  if(roomId===5)return <>
-  {common(4,'Privileged EXEC',<>Quale comando porta normalmente da User EXEC a Privileged EXEC?</>, 'x',['enable','configure terminal','interface g0/0','no shutdown'])}
-  {common(5,'Configurazione globale',<>Da R5# quale comando apre la modalità Global Configuration?</>, 'x',['configure terminal','enable','show running-config','interface g0/0'])}
-  {common(6,'Interfaccia down',<>Una porta è administratively down. Quale comando, eseguito nella modalità corretta, la riattiva?</>, 'x',['no shutdown','shutdown','enable interface','up'])}
-  {common(7,'Verifica sintetica',<>Quale comando mostra rapidamente stato e indirizzi delle interfacce?</>, 'x',['show ip interface brief','show ip route','show running-config | section ip route','ping'])}
-  {common(8,'Rotta statica',<>Quale comando mostra le rotte presenti nella tabella di routing?</>, 'x',['show ip route','show interfaces','show ip interface brief','show vlan'])}
-  {common(9,'Next-hop non raggiungibile',<>Una static route punta a 10.0.6.2 ma l'interfaccia verso 10.0.6.0/30 è down. Qual è la prima causa da verificare?</>, 'x',["Stato dell'interfaccia",'DNS','HTTP','NAT'])}
-  {common(10,'Sequenza diagnostica',<>Quale sequenza è più coerente per un guasto di connettività su una singola interfaccia?</>, 'x',['show ip interface brief → configurazione → no shutdown → verifica','ping → reload → erase startup-config','show ip route → cambiare DNS → shutdown','configure terminal → reload → ping'])}
+  <Panel title="MISSIONE 04 · ENTRA NELLA MODALITÀ GIUSTA"><p className="instruction">Partendo da R5&gt;, scrivete la sequenza minima per arrivare a R5(config-if)# su Gi0/2.</p><Input value={a[p(4)]||''} onChange={v=>set(p(4),v)} placeholder="comando → comando → comando"/></Panel>
+  <Panel title="MISSIONE 05 · CONFIGURAZIONE GLOBALE"><p className="instruction">Siete in R5#. Quale comando apre la modalità globale? Poi spiegate perché enable non serve più.</p><Input value={a[p(5)]||''} onChange={v=>set(p(5),v)} placeholder="comando + spiegazione"/></Panel>
+  <Panel title="MISSIONE 06 · INTERFACCIA SPENTA"><p className="instruction">L'output dice administratively down/down. Indicate il comando e la modalità IOS necessaria.</p><Input value={a[p(6)]||''} onChange={v=>set(p(6),v)} placeholder="modalità + comando"/></Panel>
+  <Panel title="MISSIONE 07 · PRIMA FOTOGRAFIA"><p className="instruction">Prima di modificare il router, quale comando usereste per avere rapidamente stato e indirizzi di tutte le interfacce? Spiegate perché è più utile di show ip route per questo sintomo.</p><Input value={a[p(7)]||''} onChange={v=>set(p(7),v)} placeholder="comando + motivazione"/></Panel>
+  <Panel title="MISSIONE 08 · LA ROUTING TABLE"><p className="instruction">Dopo aver riattivato Gi0/2, quale comando verifica la presenza delle rotte e quale riga dovreste ritrovare?</p><Input value={a[p(8)]||''} onChange={v=>set(p(8),v)} placeholder="comando + rete attesa"/></Panel>
+  <Panel title="MISSIONE 09 · NEXT-HOP IRRAGGIUNGIBILE"><p className="instruction">Una static route punta a 10.0.6.2 ma Gi0/2 è down. Costruite una catena causale: sintomo → causa → correzione → verifica.</p><Input value={a[p(9)]||''} onChange={v=>set(p(9),v)} placeholder="sintomo → causa → fix → verifica"/></Panel>
+  <Panel title="MISSIONE 10 · TROUBLESHOOTING SENZA INDOVINARE"><p className="instruction">Avete un solo tentativo di modifica. Prima dovete scegliere le evidenze da raccogliere: show ip interface brief, show ip route, running-config. Spiegate in quale ordine le usereste e cosa cerchereste.</p><Input value={a[p(10)]||''} onChange={v=>set(p(10),v)} placeholder="ordine + evidenze"/></Panel>
  </>
+
  if(roomId===6)return <>
-  {common(4,'Trunk',<>Una porta deve trasportare VLAN 10, 20 e 30 tra switch e router. Quale modalità è necessaria?</>, 'x',['Trunk','Access VLAN 10','Shutdown','Loopback'])}
-  {common(5,'Broadcast domain',<>PC-A in VLAN 10 invia un broadcast. Quale PC riceve il broadcast se appartiene a VLAN 20 sullo stesso switch?</>, 'x',['Nessuno, se le VLAN sono configurate correttamente','PC della VLAN 20 sempre','Tutti i PC','Solo il router'])}
-  {common(6,'Router-on-a-stick',<>In una configurazione router-on-a-stick, il collegamento switch-router deve essere…</>, 'x',['Trunk 802.1Q','Access VLAN 10','Un cavo per ogni VLAN obbligatoriamente','Spento'])}
-  {common(7,'Gateway',<>Un host 192.168.30.20/24 appartiene alla VLAN 30. Quale gateway coerente può usare?</>, 'x',['192.168.30.1','192.168.20.1','192.168.30.255','192.168.31.1'])}
-  {common(8,'DHCP',<>Qual è il primo messaggio tipico con cui un client DHCP cerca un server quando non conosce ancora il proprio indirizzo?</>, 'x',['DHCPDISCOVER','DHCPOFFER','DHCPACK','DHCPRELEASE'])}
-  {common(9,'VLAN allowed',<>Due switch hanno trunk attivo, ma VLAN 30 non passa. Quale parametro va controllato subito?</>, 'x',['Allowed VLAN sul trunk','Porta TCP 443','TTL IP','DNS'])}
-  {common(10,'Inter-VLAN',<>Perché due host appartenenti a VLAN differenti non comunicano direttamente a livello 2?</>, 'x',['Appartengono a domini di broadcast distinti e serve routing','Perché hanno sempre MAC uguali','Perché TCP blocca le VLAN','Perché DHCP impedisce il routing'])}
+  <Panel title="MISSIONE 04 · TRUNK, MA DIMOSTRALO"><p className="instruction">Due switch devono trasportare VLAN 10,20,30 sullo stesso link. Spiegate perché una porta access non può svolgere lo stesso ruolo e quale configurazione logica serve.</p><Input value={a[p(4)]||''} onChange={v=>set(p(4),v)} placeholder="modalità + motivazione"/></Panel>
+  <Panel title="MISSIONE 05 · BROADCAST DOMAIN TEST"><p className="instruction">PC-A è VLAN10 e PC-B VLAN20 sullo stesso switch. Prevedete il risultato di un broadcast e spiegate il ruolo delle VLAN.</p><Input value={a[p(5)]||''} onChange={v=>set(p(5),v)} placeholder="chi riceve + perché"/></Panel>
+  <Panel title="MISSIONE 06 · ROUTER-ON-A-STICK"><p className="instruction">Descrivete il percorso di un pacchetto VLAN20 che deve raggiungere VLAN30 passando da un unico collegamento switch-router.</p><Input value={a[p(6)]||''} onChange={v=>set(p(6),v)} placeholder="PC → switch → ... → PC"/></Panel>
+  <Panel title="MISSIONE 07 · GATEWAY DA RICAVARE"><p className="instruction">Host 192.168.30.20/24 in VLAN30. Il gateway è il primo indirizzo utilizzabile scelto dal progetto. Calcolatelo e spiegate perché il broadcast non può esserlo.</p><Input value={a[p(7)]||''} onChange={v=>set(p(7),v)} placeholder="gateway + spiegazione"/></Panel>
+  <Panel title="MISSIONE 08 · DHCP FORENSICS"><p className="instruction">Un client appena collegato non possiede ancora un IP. Ricostruite l'ordine dei quattro messaggi DHCP e indicate quale assegna definitivamente la configurazione.</p><Input value={a[p(8)]||''} onChange={v=>set(p(8),v)} placeholder="DISCOVER → OFFER → … → …"/></Panel>
+  <Panel title="MISSIONE 09 · VLAN ALLOWED"><p className="instruction">Trunk up, VLAN 10 funziona, VLAN 30 no. Indicate il controllo più mirato e spiegate perché non partireste dal DNS.</p><Input value={a[p(9)]||''} onChange={v=>set(p(9),v)} placeholder="controllo + motivazione"/></Panel>
+  <Panel title="MISSIONE 10 · INTER-VLAN FORENSICS"><p className="instruction">PC-A 192.168.10.20/24 deve raggiungere SERVER 192.168.30.50/24. Ricostruite il percorso L2/L3 e indicate dove entra in gioco il gateway.</p><Input value={a[p(10)]||''} onChange={v=>set(p(10),v)} placeholder="percorso completo"/></Panel>
  </>
+
  if(roomId===7)return <>
-  {common(4,'Costo verso root',<>SW2 ha un link diretto a SW1 con costo 10 e un percorso SW2→SW3→SW1 con costi 100+10. Quale percorso preferisce?</>, 'x',['Diretto SW2→SW1','Via SW3','Entrambi indistinguibili','Nessuno'])}
-  {common(5,'Root Port SW3',<>Con SW1 root e link SW3→SW1 costo 10, qual è il root port di SW3?</>, 'x',['Porta verso SW1','Porta verso SW2','Entrambe','Nessuna'])}
-  {common(6,'Link ridondante',<>Con SW1 root e costi 10,10,100 sul triangolo, quale collegamento è il candidato naturale a essere bloccato sul lato non-designated?</>, 'x',['SW2–SW3','SW1–SW2','SW1–SW3','Nessuno'])}
-  {common(7,'Tie-break',<>Se due percorsi verso la root hanno lo stesso costo, quale informazione può essere usata per scegliere il BPDU migliore?</>, 'x',['Bridge ID del mittente','Porta TCP 80','Indirizzo IP del client','TTL del frame'])}
-  {common(8,'Failure',<>Se cade il link diretto SW2→SW1 e SW2 aveva SW2→SW3 in alternate/blocking, cosa deve accadere per mantenere il percorso verso root?</>, 'x',['Il percorso SW2→SW3 può diventare forwarding dopo la riconvergenza','SW2 deve spegnersi','SW1 diventa automaticamente non-root','Tutti i link diventano blocking'])}
-  {common(9,'Obiettivo STP',<>Qual è il risultato fondamentale ottenuto da STP in una rete con collegamenti ridondanti?</>, 'x',['Una topologia di forwarding senza loop di livello 2','Un unico indirizzo IP per tutti gli host','La sostituzione di DHCP','Il routing tra VLAN'])}
-  {common(10,'Stato finale',<>Quando STP ha stabilizzato correttamente il triangolo, cosa deve accadere al traffico broadcast rispetto al loop iniziale?</>, 'x',['Il loop viene eliminato dal piano di forwarding','Il broadcast viene moltiplicato indefinitamente','Tutti i link vengono disattivati','Il router viene escluso'])}
+  <Panel title="MISSIONE 04 · CALCOLA IL ROOT PATH"><p className="instruction">SW1 è root. SW2 può raggiungerlo direttamente con costo 10 oppure via SW3 con costo 110. Calcolate i due costi e motivate la scelta.</p><Input value={a[p(4)]||''} onChange={v=>set(p(4),v)} placeholder="10 vs 110 → scelta"/></Panel>
+  <Panel title="MISSIONE 05 · ROOT PORT DI SW3"><p className="instruction">SW3 ha un link diretto verso SW1 di costo 10 e uno verso SW2 di costo 100. Determinate il root port.</p><Input value={a[p(5)]||''} onChange={v=>set(p(5),v)} placeholder="porta + costo verso root"/></Panel>
+  <Panel title="MISSIONE 06 · IL LINK DA BLOCCARE"><p className="instruction">Triangolo: SW1-SW2=10, SW1-SW3=10, SW2-SW3=100. Dopo aver determinato i root port, indicate il link alternate/blocking e spiegate il motivo.</p><Input value={a[p(6)]||''} onChange={v=>set(p(6),v)} placeholder="link + motivazione STP"/></Panel>
+  <Panel title="MISSIONE 07 · TIE-BREAK"><p className="instruction">Due percorsi hanno lo stesso costo verso la root. Quale informazione del BPDU entra nel confronto successivo? Non rispondete con un semplice “il più basso”: indicate l'identificatore.</p><Input value={a[p(7)]||''} onChange={v=>set(p(7),v)} placeholder="identificatore + regola"/></Panel>
+  <Panel title="MISSIONE 08 · FAILURE TEST"><p className="instruction">Cade SW2-SW1. Il collegamento SW2-SW3 era blocking. Prevedete quale transizione deve avvenire dopo la riconvergenza e perché non crea un nuovo loop.</p><Input value={a[p(8)]||''} onChange={v=>set(p(8),v)} placeholder="stato → stato + motivo"/></Panel>
+  <Panel title="MISSIONE 09 · PERCHÉ STP?" className="mission-dark"><p className="instruction">Non date la definizione scolastica. Spiegate cosa cambierebbe nella rete se tutti i link del triangolo restassero contemporaneamente in forwarding.</p><Input value={a[p(9)]||''} onChange={v=>set(p(9),v)} placeholder="effetto sui frame broadcast"/></Panel>
+  <Panel title="MISSIONE 10 · STP LIVE"><p className="instruction">Avviate il traffico, osservate il loop, determinate root/root ports/blocking, applicate STP e poi simulate la caduta del link principale. Scrivete la sequenza di decisioni che avete seguito.</p><Input value={a[p(10)]||''} onChange={v=>set(p(10),v)} placeholder="decisione 1 → 2 → 3 → 4"/></Panel>
  </>
+
  if(roomId===8)return <>
-  {common(3,'Configurazione IP',<>Quale comando assegna 192.168.10.1/24 a Gi0/0?</>, 'x',['ip address 192.168.10.1 255.255.255.0','ip 192.168.10.1/24','set ip 192.168.10.1','address 192.168.10.1 24'])}
-  {common(4,'Attiva interfaccia',<>Quale comando rende operativa un'interfaccia amministrativamente spenta?</>, 'x',['no shutdown','startup','enable port','interface up'])}
-  {common(5,'Rotta statica',<>Quale comando instrada 192.168.20.0/24 via 10.0.0.2?</>, 'x',['ip route 192.168.20.0 255.255.255.0 10.0.0.2','route 192.168.20.0/24 10.0.0.2','ip static 192.168.20.0 10.0.0.2','ip forward 192.168.20.0 10.0.0.2'])}
-  {common(6,'Verifica con ping',<>Quale comando verifica direttamente la raggiungibilità IP di 192.168.20.1?</>, 'x',['ping 192.168.20.1','test 192.168.20.1','trace 192.168.20.1','show ping 192.168.20.1'])}
-  {common(7,'Ordine',<>Quale sequenza è necessaria per configurare un indirizzo su Gi0/0 partendo da R1&gt;?</>, 'x',['enable → configure terminal → interface g0/0 → ip address','configure terminal → enable → ip address → interface','interface g0/0 → enable → ip address','ip address → interface → enable'])}
-  {common(8,'Default route',<>Quale comando configura una default route IPv4 verso 10.0.0.2?</>, 'x',['ip route 0.0.0.0 0.0.0.0 10.0.0.2','ip default 10.0.0.2','default-route 10.0.0.2','ip route default 10.0.0.2'])}
-  {common(9,'Tabella',<>Dopo aver configurato una rotta statica, quale comando permette di verificare che sia presente nella routing table?</>, 'x',['show ip route','show interfaces','show vlan','show running-config | section interface'])}
-  {common(10,'End-to-end',<>Una rete contiene LAN locale, link WAN e LAN remota. Quale verifica dimostra meglio la connettività end-to-end dopo la configurazione?</>, 'x',['ping verso un host della LAN remota','show version','show clock','hostname'])}
+  <Panel title="MISSIONE 03 · CONFIGURA SENZA GUI"><p className="instruction">Partendo da R1&gt;, scrivete la sequenza minima per configurare Gi0/0 con 192.168.10.1/24 e renderla attiva.</p><Input value={a[p(3)]||''} onChange={v=>set(p(3),v)} placeholder="enable → ..."/></Panel>
+  <Panel title="MISSIONE 04 · INTERFACCIA OPERATIVA"><p className="instruction">Un'interfaccia è administratively down. Indicate comando e modalità, poi la verifica che usereste.</p><Input value={a[p(4)]||''} onChange={v=>set(p(4),v)} placeholder="comando | verifica"/></Panel>
+  <Panel title="MISSIONE 05 · ROTTA STATICA"><p className="instruction">Configurate mentalmente la rotta 192.168.20.0/24 via 10.0.0.2. Scrivete il comando IOS completo.</p><Input value={a[p(5)]||''} onChange={v=>set(p(5),v)} placeholder="ip route ..."/></Panel>
+  <Panel title="MISSIONE 06 · PROVA END-TO-END"><p className="instruction">La rete è configurata. Quale test inviereste per primo a un host remoto e quale comando usereste se fallisse per capire dove si interrompe il percorso?</p><Input value={a[p(6)]||''} onChange={v=>set(p(6),v)} placeholder="test 1 | test 2"/></Panel>
+  <Panel title="MISSIONE 07 · ORDINE DI CONFIGURAZIONE"><p className="instruction">Scrivete nell'ordine corretto le operazioni necessarie per configurare Gi0/0 partendo da R1&gt;.</p><Stepper value={a[p(7)]||''} onChange={v=>set(p(7),v)} max={6}/><Input value={a[p(7)+'x']||''} onChange={v=>set(p(7)+'x',v)} placeholder="sequenza comandi"/></Panel>
+  <Panel title="MISSIONE 08 · DEFAULT ROUTE"><p className="instruction">Scrivete il comando IOS per una default route verso 10.0.0.2 e spiegate quando verrà utilizzata.</p><Input value={a[p(8)]||''} onChange={v=>set(p(8),v)} placeholder="comando + condizione"/></Panel>
+  <Panel title="MISSIONE 09 · VERIFICA DELLA ROUTE"><p className="instruction">Dopo una static route, distinguete tra configurazione presente e route effettivamente installata nella tabella. Indicate i due comandi utili.</p><Input value={a[p(9)]||''} onChange={v=>set(p(9),v)} placeholder="comando 1 + comando 2"/></Panel>
+  <HeliosInvestigation a={a} set={set}/>
  </>
  return null
 }
+
+function HeliosInvestigation({a,set}:{a:Answers;set:(k:string,v:string)=>void}){
+ const [tab,setTab]=useState<'case'|'profiles'|'evidence'|'timeline'>('case')
+ const suspects=[
+  {id:'A',name:'Marta Vieri',role:'Network Engineer',color:'cyan',detail:'Badge NETWORK FLOOR 02:13. Account privilegiato su R3. Può modificare routing e VLAN dalla console.'},
+  {id:'B',name:'Luca Ferri',role:'SOC Analyst',color:'amber',detail:'Accesso ai log SOC e console di monitoraggio. Nessun privilegio di configurazione su R3.'},
+  {id:'C',name:'Nadia Rinaldi',role:'DevOps',color:'violet',detail:'Accesso ai server applicativi e alla pipeline. VPN attiva alle 02:05, ma nessun accesso alla console R3.'},
+  {id:'D',name:'Paolo Serra',role:'System Administrator',color:'green',detail:'Può modificare VLAN e DHCP sugli switch di accesso, ma non ha accesso privilegiato al core R3.'},
+  {id:'E',name:'Elena Conti',role:'Security Consultant',color:'rose',detail:'Account audit temporaneo. VPN autorizzata 02:00–02:10; nessun accesso fisico al NETWORK FLOOR.'},
+ ]
+ const [selected,setSelected]=useState(a.helioSuspect||'')
+ const evidence=['E3 · badge alle 02:13','E7 · console R3 alle 02:17','E11 · modifica VLAN alle 02:19','E14 · VPN audit alle 02:05','E18 · DHCP log alle 02:21']
+ const choose=(id:string)=>{setSelected(id);set('helioSuspect',id)}
+ return <Panel title="MISSIONE 10 · HELIOS CORP — L'INCIDENTE DELLE 02:17" className="helios-case">
+  <div className="helios-hero"><div><div className="eyebrow">CASE FILE HC-0217</div><h2>CHI HA ALTERATO LA RETE?</h2><p>Alle 02:17 il core router R3 ha perso la rotta verso il data center. Alle 02:19 una VLAN è stata modificata. Cinque persone avevano accesso fisico o logico all'infrastruttura.</p></div><div className="case-stamp">CLASSIFIED<br/><strong>HELIOS CORP</strong></div></div>
+  <div className="helios-tabs">{[['case','DOSSIER'],['profiles','SOSPETTATI'],['evidence','EVIDENZE'],['timeline','TIMELINE']].map(([id,label])=><button type="button" key={id} className={tab===id?'active':''} onClick={()=>setTab(id as typeof tab)}>{label}</button>)}</div>
+  {tab==='case'&&<div className="helios-dossier"><CodeBox>INCIDENT WINDOW
+02:05  VPN audit session opened
+02:13  badge event: NETWORK FLOOR
+02:17  R3 route anomaly
+02:19  VLAN 30 changed
+02:21  DHCP lease burst
+02:24  anomaly detected by SOC
+
+KNOWN FACTS
+• R3 console requires privileged access.
+• VLAN changes are logged.
+• The attacker did not need to compromise a workstation.
+• Exactly one suspect's known access pattern is consistent with ALL events.</CodeBox><p className="instruction">Non scegliere ancora il colpevole. Raccogliete almeno tre indizi prima di formulare la conclusione.</p></div>}
+  {tab==='profiles'&&<div className="suspect-grid">{suspects.map(s=><button type="button" key={s.id} className={`suspect-card suspect-${s.color} ${selected===s.id?'selected':''}`} onClick={()=>choose(s.id)}><div className="suspect-avatar">{s.id}</div><div><h3>{s.name}</h3><span>{s.role}</span><p>{s.detail}</p></div></button>)}</div>}
+  {tab==='evidence'&&<div className="evidence-grid">{evidence.map((e,i)=><Evidence key={e} active={a[`he${i}`]==='1'} onClick={()=>toggleEvidence(set,a,i)}>{e}</Evidence>)}<CodeBox>LOG R3
+02:16:58 login: local-console / privileged
+02:17:03 route 172.20.40.0/24 removed
+02:17:09 route 172.20.40.0/24 added via 10.0.3.9
+02:19:14 vlan 30 modified by admin-console
+02:21:02 DHCPDISCOVER burst on VLAN 30</CodeBox></div>}
+  {tab==='timeline'&&<div className="timeline-board"><div className="timeline-event"><b>02:13</b><span>Badge NETWORK FLOOR</span><small>Physical access</small></div><div className="timeline-event critical"><b>02:17</b><span>R3 route removed</span><small>Privileged console</small></div><div className="timeline-event critical"><b>02:19</b><span>VLAN 30 modified</span><small>Admin console</small></div><div className="timeline-event"><b>02:21</b><span>DHCP burst</span><small>VLAN 30</small></div></div>}
+  <div className="helios-final"><div><label>CONCLUSIONE INVESTIGATIVA</label><p>Selezionate il sospettato e poi spiegate la catena tecnica che collega accesso → console → modifica route → modifica VLAN.</p></div><div className="suspect-choice-row">{suspects.map(s=><button type="button" key={s.id} className={selected===s.id?'selected':''} onClick={()=>choose(s.id)}>{s.id} · {s.name}</button>)}</div><Input value={a.helioReason||''} onChange={v=>set('helioReason',v)} placeholder="catena delle evidenze, con orari e accessi"/></div>
+ </Panel>
+}
+function toggleEvidence(set:(k:string,v:string)=>void,a:Answers,i:number){set(`he${i}`,a[`he${i}`]==='1'?'':'1')}

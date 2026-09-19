@@ -21,3 +21,9 @@ Il progetto è pronto per GitHub/Vercel. L'integrazione Vercel + Supabase può s
 8 distretti: OSI/PDU, IPv4/VLSM, CIDR/supernetting, routing/traceroute, diagnosi router, VLAN/Wi-Fi, ridondanza/STP, Cisco CLI.
 
 Le prove vengono validate server-side e lo stato di avanzamento è persistito in Supabase.
+
+## V5 — difficoltà e varietà visiva
+- Le missioni aperte privilegiano input testuali e attività operative rispetto ai menu a tendina.
+- Il server valida la traccia completa; per le spiegazioni lunghe usa una validazione per concetti tecnici, non una singola stringa obbligatoria.
+- Il Distretto 8 include l'indagine Helios Corp con cinque sospettati, dossier, profili, timeline, log e selezione vincolata delle evidenze.
+- Ogni distretto ha una variante visiva dedicata per evitare la ripetizione della stessa composizione.
