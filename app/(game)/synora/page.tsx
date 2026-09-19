@@ -21,8 +21,8 @@ export default async function SynoraDashboard() {
   return <main className="synora-shell"><div className="grid-bg"/><div className="scanlines"/><div className="aurora aurora-a"/><div className="aurora aurora-b"/>
     <header className="topbar"><div className="brand"><span className="brand-mark">S</span> SYNORA <i>//</i> CITY NETWORK</div><div className="top-actions"><div className="status"><span className="dot"/> NETWORK DEGRADED</div><LogoutButton/></div></header>
     <section className="dashboard">
-      <div className="dash-head"><div><div className="eyebrow">CITY CONTROL MAP · {profile?.role === 'teacher' ? 'TEACHER NODE' : 'FIELD NODE'}</div><h1 className="dash-title">Il Piano regolatore</h1><p className="dash-sub">Otto distretti. Una rete. Un solo percorso per riportare Synora online.</p></div></div>
-      <div className="map-panel"><div className="map-label top-left">SYNORA / SECTOR MAP <span>v1.0</span></div><div className="map-label bottom-right">LATENCY <b>17ms</b> · PACKETS <b>STABLE</b></div>
+      <div className="dash-head"><div><div className="eyebrow">CITY CONTROL MAP · {profile?.role === 'teacher' ? 'TEACHER NODE' : 'FIELD NODE'}</div><h1 className="dash-title">Il Piano regolatore</h1><p className="dash-sub">Otto distretti. Ottanta missioni. Una rete. Un solo percorso per riportare Synora online.</p></div></div>
+      <div className="map-panel"><div className="map-label top-left">SYNORA / SECTOR MAP <span>v4.0 · 80 MISSIONI</span></div><div className="map-label bottom-right">LATENCY <b>17ms</b> · PACKETS <b>STABLE</b></div>
         <div className="map-inner">
           <svg className="network-lines" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true">
             <defs><linearGradient id="route" x1="0" x2="1"><stop offset="0" stopColor="#71e6ff" stopOpacity=".12"/><stop offset=".5" stopColor="#71e6ff" stopOpacity=".75"/><stop offset="1" stopColor="#71e6ff" stopOpacity=".12"/></linearGradient></defs>
@@ -35,7 +35,7 @@ export default async function SynoraDashboard() {
         </div>
       </div>
       <div className="progress"><div className="stat"><span>Distretti ripristinati</span><b>{completed}<em>/08</em></b></div><div className="stat"><span>Fronte attuale</span><b>0{current}</b></div><div className="stat"><span>Errori registrati</span><b>{progress?.errors ?? 0}</b></div><div className="stat"><span>Indizi consumati</span><b>{progress?.hints_used ?? 0}</b></div></div>
-      <div className="map-footer"><span>FIELD PROTOCOL: ogni distretto produce una chiave.</span><span>CHIAVE FINALE: <b>████████</b></span></div>
+      <div className="map-footer"><span>FIELD PROTOCOL: 10 missioni per distretto · 80 prove totali.</span><span>CHIAVE FINALE: <b>████████</b></span></div>
     </section>
   </main>
 }
