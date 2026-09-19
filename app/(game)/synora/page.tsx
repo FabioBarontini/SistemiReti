@@ -83,7 +83,7 @@ export default async function SynoraDashboard() {
 
           <aside className="control-rail">
             <IncidentEvent roomId={current} />
-            <Nexus roomId={current} />
+            <Nexus roomId={current} errors={errors} completed={completed} />
             <div className="field-readout"><span>FIELD PROTOCOL</span><b>10 MISSIONI / DISTRETTO</b><small>80 prove · 8 nodi · 1 rete</small></div>
             <div className="error-readout"><span>NETWORK CONDITION</span><strong>{errors === 0 ? 'NOMINAL' : errors < 5 ? 'UNSTABLE' : 'CRITICAL'}</strong><small>{errors} anomalie registrate · {hints} indizi consumati</small></div>
           </aside>

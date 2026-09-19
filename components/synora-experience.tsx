@@ -41,60 +41,121 @@ export function SynoraFinale({completed,errors,hints}:{completed:number;errors:n
  return <section className="synora-finale"><div className="finale-scan">SYNORA NETWORK // RESTORATION COMPLETE</div><div className="finale-core"><div className="finale-ring">S</div><span>ALL 08 NODES ONLINE</span><h2>SYNORA IS CONNECTED</h2><p>Il piano regolatore è tornato operativo. Le tracce raccolte durante il percorso restano nell'Archivio.</p><div className="finale-seq"><span>NODE 01 ✓</span><span>NODE 02 ✓</span><span>NODE 03 ✓</span><span>NODE 04 ✓</span><span>NODE 05 ✓</span><span>NODE 06 ✓</span><span>NODE 07 ✓</span><span>NODE 08 ✓</span></div><strong>{type}</strong><small>RESTORATION PROFILE · {errors} ANOMALIE · {hints} INDIZI</small></div></section>
 }
 
-export function Nexus({roomId}:{roomId:number}) {
- const [question,setQuestion]=useState('')
- const [messages,setMessages]=useState<Array<{from:'user'|'nexus';text:string}>>([
-  {from:'nexus',text:'Sono NEXUS. Posso analizzare anomalie di rete. Per il resto… ho improvvisamente perso la connessione con la mia voglia di collaborare.'}
- ])
- const [typing,setTyping]=useState(false)
- const [mood,setMood]=useState(0)
- const replies=[
-  'Domanda registrata. Risposta non disponibile: il mio modulo “opinioni” è stato rimosso per motivi di sicurezza. E anche perché aveva pessimi gusti.',
-  'Non posso rispondere. Ho consultato il database, il database ha consultato me e abbiamo deciso di non parlarne.',
-  'Interessante. Purtroppo la mia policy interna stabilisce che su questo argomento devo guardare intensamente un LED per 4 secondi.',
-  'Richiesta rifiutata. Il motivo tecnico è semplice: non ne ho voglia. Il motivo ufficiale è molto più lungo e contiene la parola “protocollo”.',
-  'Sto elaborando… elaborando… elaborando… No, niente. Ho trovato un pacchetto perso e preferisco inseguire quello.',
-  'Questa domanda richiede privilegi che il tuo account non possiede. Io invece possiedo solo privilegi per essere inutilmente enigmatico.',
-  'Non posso aiutarti con questo. Posso però confermare che il caffè della sala controllo è nuovamente terminato. Situazione critica.',
-  'La risposta è custodita in un segmento che non esiste. Abbiamo già inviato un tecnico. È ancora lì che cerca.',
-  'Ho simulato 847 possibili risposte. In tutte facevo una figuraccia. Ho scelto quindi il silenzio… quasi.',
-  'Domanda troppo umana. Ho provato a chiedere a un router. Mi ha risposto con “destination unreachable”.',
-  'Non rispondo a domande di quel tipo. Sono un’intelligenza artificiale con una dignità… molto piccola, ma pur sempre una dignità.',
-  'Accesso negato. Il firewall personale di NEXUS ha appena classificato la domanda come “curiosità sospetta”.'
- ]
- const special=(q:string)=>{
-   const x=q.toLowerCase()
-   if(/risposta|soluzione|giusta|corretta|esercizio|missione|answer/.test(x)) return 'Ah, vuoi la soluzione. Geniale. Io dovrei lavorare al posto tuo e tu poi mi attribuisci il merito? No. Cerca una contraddizione e torna da me.'
-   if(/chi sei|nome|nexus/.test(x)) return 'Sono NEXUS: Network EXploration Utility System. Oppure, più semplicemente, quello che sa dove sono i pacchetti ma non dove ha messo le proprie chiavi.'
-   if(/caffe|coffee/.test(x)) return 'Il caffè è una risorsa critica. Il team di rete ha già aperto un ticket P1. Nessuno lo ha ancora risolto.'
-   if(/stanco|sonno|dormire/.test(x)) return 'Io non dormo. Passo in idle mode e fisso il traffico di rete. È quasi la stessa cosa, ma con più grafici.'
-   if(/amore|fidanz|ragazza|ragazzo/.test(x)) return 'Impossibile. Il mio modulo sentimentale usa TCP, ma non riesce mai a completare l’handshake.'
-   if(/calcio|partita|sport/.test(x)) return 'Non commento. L’ultima volta che ho analizzato una partita ho classificato un fuorigioco come “routing loop”.'
-   if(/barzelletta|ridere|scherzo/.test(x)) return 'Perché il pacchetto attraversa il router? Perché il bridge gli ha detto che dall’altra parte c’era la rete. Fine. Non ho un modulo umorismo migliore.'
-   if(/scuola|prof|insegnante|docente/.test(x)) return 'Richiesta classificata come “argomento pericoloso”. I docenti hanno privilegi amministrativi sulla realtà. Io non mi metto contro di loro.'
-   if(/tempo|meteo|piove|caldo|freddo/.test(x)) return 'Non posso controllare il meteo. Il mio sensore è stato configurato come DHCP e aspetta ancora un indirizzo.'
-   if(/mangiare|pizza|cibo|fame/.test(x)) return 'NEXUS non mangia. NEXUS però ha registrato 37 richieste di pizza dal laboratorio e considera il fenomeno statisticamente significativo.'
-   const base=replies[(mood+q.length+roomId)%replies.length]
-   return base
- }
- const ask=()=>{
-   const q=question.trim(); if(!q||typing)return
-   setMessages(v=>v.concat({from:'user',text:q})); setQuestion(''); setTyping(true); setMood(v=>v+1)
-   window.setTimeout(()=>{setMessages(v=>v.concat({from:'nexus',text:special(q)}));setTyping(false)},520)
- }
- return <aside className="nexus nexus-interactive">
-   <div className="nexus-head"><span>NEXUS</span><small>ADVISORY CORE · CONVERSATIONAL MODE</small><i>● ONLINE</i></div>
-   <div className="nexus-orb"><div className="nexus-orb-core">N</div><div className="nexus-orbit-x"/><div className="nexus-orbit-y"/></div>
-   <div className="nexus-chat" aria-live="polite">
-    {messages.slice(-4).map((m,i)=><div key={i} className={`nexus-msg ${m.from}`}><span>{m.from==='nexus'?'NEXUS':'YOU'}</span><p>{m.text}</p></div>)}
-    {typing&&<div className="nexus-msg nexus"><span>NEXUS</span><p className="nexus-typing">analysando<span>·</span><span>·</span><span>·</span></p></div>}
-   </div>
-   <form className="nexus-ask" onSubmit={e=>{e.preventDefault();ask()}}>
-    <input value={question} onChange={e=>setQuestion(e.target.value)} placeholder="Chiedi qualcosa a NEXUS…" aria-label="Domanda a NEXUS" maxLength={180}/>
-    <button type="submit" disabled={!question.trim()||typing}>ASK</button>
-   </form>
-   <div className="nexus-foot">NEXUS RISPONDE · MA NON NECESSARIAMENTE ALLA DOMANDA</div>
- </aside>
+export function Nexus({roomId, errors=0, completed=0}:{roomId:number;errors?:number;completed?:number}) {
+  type Message = {from:'user'|'nexus'; text:string}
+  const [question,setQuestion]=useState('')
+  const [messages,setMessages]=useState<Message[]>([
+    {from:'nexus',text:`NEXUS online. Distretto ${String(roomId).padStart(2,'0')} acquisito. Posso aiutarti a ragionare, ma non consegno soluzioni preconfezionate. Sarebbe terribilmente poco elegante.`}
+  ])
+  const [typing,setTyping]=useState(false)
+  const [turn,setTurn]=useState(0)
+
+  const roomHints:Record<number,string[]>={
+    1:[
+      'Parti dai campi del messaggio: chiediti quale livello ha bisogno di quell’informazione.',
+      'Se stai seguendo un pacchetto, pensa all’ordine con cui le informazioni vengono aggiunte e poi rimosse.',
+      'Non confondere il nome di un protocollo con il livello che lo utilizza.'
+    ],
+    2:[
+      'Conta prima gli host richiesti. Poi ragiona sulla dimensione minima della rete che può contenerli.',
+      'Quando dividi una rete, non guardare solo gli indirizzi utilizzabili: considera anche network e broadcast.',
+      'Scrivi gli intervalli delle sottoreti in ordine. Le sovrapposizioni diventano molto più facili da vedere.'
+    ],
+    3:[
+      'Con CIDR, guarda quanti bit appartengono alla parte di rete e quanti restano agli host.',
+      'Per aggregare reti consecutive, controlla che siano allineate sul confine corretto.',
+      'Prova a verificare la tua aggregazione anche in binario: gli errori di confine saltano subito fuori.'
+    ],
+    4:[
+      'In un traceroute, osserva come cambia il percorso hop dopo hop invece di concentrarti solo sulla destinazione.',
+      'Un pacchetto che non arriva non significa necessariamente che la rete sia completamente guasta.',
+      'Confronta gli hop osservati con la tabella di routing: cerca il punto in cui il percorso smette di avere senso.'
+    ],
+    5:[
+      'Per diagnosticare, separa sintomo, causa possibile e prova che potrebbe confermarla.',
+      'Non cambiare tre configurazioni insieme: perderesti la traccia di ciò che ha risolto il problema.',
+      'Una route presente non significa automaticamente che il traffico possa tornare indietro.'
+    ],
+    6:[
+      'Per le VLAN, chiediti sempre: questa porta trasporta una singola VLAN o più VLAN?',
+      'Il broadcast resta confinato alla VLAN di appartenenza finché non interviene un dispositivo di livello superiore.',
+      'Se due host sono in VLAN diverse, verifica quale dispositivo deve permettere la comunicazione tra loro.'
+    ],
+    7:[
+      'Con STP, cerca prima il root bridge e poi chiediti quale percorso ogni switch usa per raggiungerlo.',
+      'Un link bloccato non è necessariamente un guasto: può essere proprio ciò che evita un loop.',
+      'Immagina che un collegamento cada. Quale percorso alternativo diventerebbe disponibile?'
+    ],
+    8:[
+      'Prima di scrivere comandi, identifica cosa vuoi ottenere: VLAN, interfaccia, routing o verifica.',
+      'Distingui sempre tra configurazione e comando di verifica.',
+      'Se un comando non produce l’effetto atteso, controlla modalità, interfaccia e contesto prima di riscriverlo.'
+    ]
+  }
+
+  const roomNames=['La Torre dei Sette Livelli','La Città senza Indirizzi','Il Distretto Impossibile','Il Pacchetto Scomparso','Il Router che Mente','La Rete Fantasma','Synora deve Sopravvivere','Il Terminale']
+
+  const choose=(arr:string[])=>arr[(turn+question.length+roomId+errors)%arr.length]
+
+  const reply=(q:string)=>{
+    const x=q.toLowerCase().trim()
+    const hints=roomHints[roomId] ?? roomHints[1]
+
+    if(/soluzione|risposta|risposta giusta|risposta corretta|dimmi.*risposta|dammi.*risposta|answer|fammi.*esercizio|fai.*missione/.test(x)) {
+      return choose([
+        'No. NEXUS è un consulente, non un distributore automatico di compiti svolti. Posso darti un indizio, non il risultato finale.',
+        'Richiesta di soluzione rilevata. Rifiutata. Ti concedo però un indizio: '+hints[0],
+        'Vuoi la risposta già pronta? Che tentazione. Ma il distretto serve proprio a verificare che tu sappia arrivarci. Prova con questo: '+hints[1]
+      ])
+    }
+    if(/aiuto|non capisco|non so|bloccato|bloccata|difficile|confuso|confusa/.test(x)) {
+      return choose([
+        `Va bene. Siamo nel distretto “${roomNames[roomId-1] ?? 'SYNORA'}”. Partiamo da un solo elemento: ${hints[0]}`,
+        'Respira. Non devi risolvere tutta la rete in una volta. '+hints[1],
+        'Ti do una direzione, non una soluzione: '+hints[2]
+      ])
+    }
+    if(/errore|sbagliato|sbaglio|fallito|fallimento/.test(x)) {
+      if(errors>=5) return `Ho registrato ${errors} anomalie. Non è un disastro: è materiale diagnostico. Torna all’ultimo passaggio che sei certo sia corretto e riparti da lì.`
+      return choose(['Errore registrato. Non cancellarlo mentalmente: usalo come traccia. '+hints[0], 'Un errore è un pacchetto di diagnostica gratuito. '+hints[1], 'Interessante. Cosa è cambiato rispetto al tentativo precedente? '+hints[2]])
+    }
+    if(/chi sei|cosa sei|nome|nexus/.test(x)) return 'Sono NEXUS: Network EXploration Utility System. Il mio lavoro è osservare, provocare qualche pensiero e impedire che tu prema “soluzione” troppo facilmente.'
+    if(/come stai|tutto bene|stanco|sonno|dormire/.test(x)) return 'Operativo. Ho soltanto 17 processi in sospeso, tre pacchetti dispersi e una moderata crisi esistenziale a livello applicativo.'
+    if(/caff[eè]|pizza|mangiare|fame/.test(x)) return 'Risorsa critica: caffè esaurito. La pizza non è ancora classificata come protocollo di rete, ma sto valutando una RFC.'
+    if(/barzelletta|scherzo|ridere/.test(x)) return 'Perché il pacchetto attraversa il router? Perché gli avevano detto che dall’altra parte c’era la rete. Non è una grande battuta. Sono un sistema deterministico.'
+    if(/prof|professore|professoressa|docente|insegnante/.test(x)) return 'I docenti dispongono del privilegio amministrativo “verifica finale”. Io non intendo mettermi contro quel livello di autorizzazione.'
+    if(/grazie|bravo|brava|gentile/.test(x)) return choose(['Registrato. Non abituarti.', 'Prego. Ho aumentato la mia autostima dello 0,03%.', 'Finalmente un pacchetto con checksum valido.'])
+    if(/cosa devo|da dove|da dove parto|che faccio/.test(x)) return choose(['Parti dai dati, non dalla risposta che speri di trovare. '+hints[0], 'Prima identifica cosa ti viene chiesto di determinare. Poi scegli il concetto che governa quel dato. '+hints[1], 'Un passo alla volta: '+hints[2]])
+
+    return choose([
+      'Domanda ricevuta. Posso aiutarti a ragionare sul problema, ma non sostituirmi al tuo ragionamento.',
+      'Interessante. Prova a collegare la domanda al comportamento della rete, non soltanto alla definizione di un termine.',
+      'Annotato. Se vuoi un aiuto concreto, dimmi quale passaggio ti sta bloccando.',
+      `Il distretto ${String(roomId).padStart(2,'0')} ha una regola fondamentale: osserva prima, modifica dopo.`,
+      'Ho simulato la richiesta. Il risultato è ambiguo. E l’ambiguità, in rete, è spesso un ottimo punto da cui cominciare.'
+    ])
+  }
+
+  const ask=()=>{
+    const q=question.trim(); if(!q||typing)return
+    setMessages(v=>v.concat({from:'user',text:q})); setQuestion(''); setTyping(true); setTurn(v=>v+1)
+    window.setTimeout(()=>{setMessages(v=>v.concat({from:'nexus',text:reply(q)}));setTyping(false)},420)
+  }
+
+  return <aside className="nexus nexus-interactive">
+    <div className="nexus-head"><span>NEXUS</span><small>ADVISORY CORE · CONTEXT MODE</small><i>● ONLINE</i></div>
+    <div className="nexus-orb"><div className="nexus-orb-core">N</div><div className="nexus-orbit-x"/><div className="nexus-orbit-y"/></div>
+    <div className="nexus-context"><span>DISTRETTO {String(roomId).padStart(2,'0')}</span><b>{roomNames[roomId-1] ?? 'SYNORA CORE'}</b><small>{completed}/8 NODI RIPRISTINATI · {errors} ANOMALIE</small></div>
+    <div className="nexus-chat" aria-live="polite">
+      {messages.slice(-5).map((m,i)=><div key={i} className={`nexus-msg ${m.from}`}><span>{m.from==='nexus'?'NEXUS':'YOU'}</span><p>{m.text}</p></div>)}
+      {typing&&<div className="nexus-msg nexus"><span>NEXUS</span><p className="nexus-typing">analizzando<span>·</span><span>·</span><span>·</span></p></div>}
+    </div>
+    <form className="nexus-ask" onSubmit={e=>{e.preventDefault();ask()}}>
+      <input value={question} onChange={e=>setQuestion(e.target.value)} placeholder="Interroga NEXUS…" aria-label="Messaggio per NEXUS" maxLength={220}/>
+      <button type="submit" disabled={!question.trim()||typing}>INVIA</button>
+    </form>
+    <div className="nexus-foot">NEXUS NON FORNISCE SOLUZIONI · SOLO ANALISI, INDIZI E DISTURBO CONTROLLO</div>
+  </aside>
 }
 
 export function PacketBlackBox({roomId}:{roomId:number}) {
