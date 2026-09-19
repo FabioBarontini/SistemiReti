@@ -27,3 +27,16 @@ Le prove vengono validate server-side e lo stato di avanzamento è persistito in
 - Il server valida la traccia completa; per le spiegazioni lunghe usa una validazione per concetti tecnici, non una singola stringa obbligatoria.
 - Il Distretto 8 include l'indagine Helios Corp con cinque sospettati, dossier, profili, timeline, log e selezione vincolata delle evidenze.
 - Ogni distretto ha una variante visiva dedicata per evitare la ripetizione della stessa composizione.
+
+
+## V6 — SYNORA EXPERIENCE
+- Mappa cittadina interattiva con nodi online, tracce e livello di interferenza.
+- Console live con telemetria narrativa della rete.
+- Archivio degli artefatti recuperati.
+- Eventi anomali narrativi e messaggi di errore diegetici.
+- NEXUS come assistente narrativo che non fornisce direttamente le risposte.
+- Black Box con animazione del viaggio del pacchetto.
+- Cronometro narrativo di missione.
+- Finale cinematografico e profilo narrativo variabile al completamento della città.
+- Atmosfere grafiche distinte per i distretti.
+- Helios Corp mantiene dossier, sospettati, timeline, log ed evidenze come caso investigativo.

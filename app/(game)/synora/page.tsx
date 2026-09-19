@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { ROOMS } from '@/lib/game'
 import LogoutButton from '@/components/logout-button'
+import { SynoraCityMap, SynoraConsole, SynoraArtifactArchive, SynoraFinale } from '@/components/synora-experience'
 
 const POS = [[13,22],[31,39],[49,20],[68,35],[42,61],[76,58],[23,78],[57,83]]
 
@@ -35,6 +36,10 @@ export default async function SynoraDashboard() {
         </div>
       </div>
       <div className="progress"><div className="stat"><span>Distretti ripristinati</span><b>{completed}<em>/08</em></b></div><div className="stat"><span>Fronte attuale</span><b>0{current}</b></div><div className="stat"><span>Errori registrati</span><b>{progress?.errors ?? 0}</b></div><div className="stat"><span>Indizi consumati</span><b>{progress?.hints_used ?? 0}</b></div></div>
+      <SynoraConsole completed={completed} errors={progress?.errors ?? 0} hints={progress?.hints_used ?? 0}/>
+      <SynoraCityMap current={current} completed={completed} errors={progress?.errors ?? 0} hints={progress?.hints_used ?? 0}/>
+      <SynoraArtifactArchive completed={completed}/>
+      <SynoraFinale completed={completed} errors={progress?.errors ?? 0} hints={progress?.hints_used ?? 0}/>
       <div className="map-footer"><span>FIELD PROTOCOL: 10 missioni per distretto · 80 prove totali.</span><span>CHIAVE FINALE: <b>████████</b></span></div>
     </section>
   </main>
