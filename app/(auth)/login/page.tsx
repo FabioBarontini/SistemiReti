@@ -1,6 +1,7 @@
 'use client'
 
 import { FormEvent, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -41,6 +42,7 @@ export default function LoginPage() {
             <button className="cta" disabled={busy}>{busy ? 'CONNESSIONE…' : 'ENTRA IN SYNORA  →'}</button>
             {error && <div className="error">{error}</div>}
           </form>
+          <div className="auth-switch">Non hai ancora un accesso? <Link href="/register">CREA IDENTITÀ →</Link></div>
           <div className="auth-note"><span className="tiny-dot"/> SESSIONE PERSISTENTE · STATO SALVATO SUL SERVER</div>
         </div>
       </div>

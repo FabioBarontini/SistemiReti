@@ -1,4 +1,4 @@
--- NEBEIA / DATABASE SCHEMA
+-- SYNORA / DATABASE SCHEMA
 -- Run in Supabase SQL Editor after creating the project.
 
 create extension if not exists pgcrypto;
