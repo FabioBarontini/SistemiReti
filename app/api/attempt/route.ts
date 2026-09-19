@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 const expected: Record<number, Record<string,string>> = {
-  1:{A:'Applicazione',B:'Collegamento dati',C:'Rete',D:'Trasporto',order:'Collegamento → Rete → Trasporto → Applicazione'},
+  1:{A:'Trasporto',B:'Collegamento dati',C:'Rete',D:'Applicazione',order:'Collegamento → Rete → Trasporto → Applicazione'},
   2:{p0:'/26',p1:'/25',p2:'/27',p3:'/28',r0:'192.168.40.128',r1:'192.168.40.0',r2:'192.168.40.192',r3:'192.168.40.224',first:'192.168.40.129'},
   3:{cidr:'172.16.32.0/22',mask:'255.255.252.0',count:'4'},
   4:{next:'10.0.1.2',def:'default route'},
@@ -17,8 +17,8 @@ export async function POST(req: Request){
   const supabase=await createClient(); const {data:{user}}=await supabase.auth.getUser(); if(!user) return NextResponse.json({success:false,message:'SESSIONE NON VALIDA'},{status:401})
   const {roomId,answers}=await req.json(); const exp=expected[Number(roomId)]; if(!exp) return NextResponse.json({success:false,message:'DISTRETTO NON RICONOSCIUTO'},{status:400})
   const ok=Object.entries(exp).every(([k,v])=>answers?.[k]===v)
-  await supabase.from('attempts').insert({user_id:user.id,room_id:Number(roomId),answers,correct:ok})
+  await supabase.from('attempts').insert({user_id:user.id,room_id:Number(roomId),answer:JSON.stringify(answers),correct:ok})
   if(!ok){await supabase.rpc('register_error',{p_user_id:user.id}); return NextResponse.json({success:false,message:'TRACCIA INCOERENTE — almeno un passaggio non è compatibile con la topologia.'})}
-  await supabase.rpc('complete_room',{p_user_id:user.id,p_room_id:Number(roomId),p_key:keys[Number(roomId)]})
+  await supabase.rpc('complete_room',{p_user_id:user.id,p_room_id:Number(roomId)})
   return NextResponse.json({success:true,message:`TRACCIA CORRETTA — CHIAVE RECUPERATA: ${keys[Number(roomId)]}`})
 }

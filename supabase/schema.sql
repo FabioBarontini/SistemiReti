@@ -68,11 +68,11 @@ begin
   update public.game_progress set errors=errors+1,updated_at=now() where user_id=p_user_id;
 end; $$;
 
-create or replace function public.complete_room(p_user_id uuid,p_room_id integer)
+create or replace function public.complete_room(p_user_id uuid,p_room_id integer,p_key text)
 returns void language plpgsql security definer set search_path=public as $$
 begin
   if auth.uid() <> p_user_id then raise exception 'not allowed'; end if;
-  update public.room_progress set status='completed', key_code=case when p_room_id=1 then 'ENCAPSULATION' else key_code end, completed_at=now() where user_id=p_user_id and room_id=p_room_id;
+  update public.room_progress set status='completed', key_code=p_key, completed_at=now() where user_id=p_user_id and room_id=p_room_id;
   update public.game_progress set completed_rooms=least(completed_rooms+1,8),current_room=least(greatest(current_room,p_room_id+1),8),updated_at=now() where user_id=p_user_id;
   update public.room_progress set status='active' where user_id=p_user_id and room_id=p_room_id+1 and status='locked';
 end; $$;
