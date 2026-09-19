@@ -40,3 +40,12 @@ Le prove vengono validate server-side e lo stato di avanzamento è persistito in
 - Finale cinematografico e profilo narrativo variabile al completamento della città.
 - Atmosfere grafiche distinte per i distretti.
 - Helios Corp mantiene dossier, sospettati, timeline, log ed evidenze come caso investigativo.
+
+## V8 — Experience Layer
+- Intro cinematica all'ingresso, con stato della rete e accesso alla città.
+- Network Weather, presenza fisica di NEXUS e comunicazioni radio.
+- Blackout Mode e Packet Vision per rendere visibili diagnostica, forwarding e incapsulamento.
+- Incident Log, oggetti nascosti e frammenti di meta-storia distribuiti tra i distretti.
+- Finale con report personale del tecnico.
+- Messaggio di ritorno che ricorda lo stato precedente della città.
+- La stanza segreta / Node 09 non è stata aggiunta, su richiesta.

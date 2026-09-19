@@ -65,3 +65,82 @@ export function MissionClock({roomId}:{roomId:number}) {
  const m=Math.floor(seconds/60).toString().padStart(2,'0');const s=(seconds%60).toString().padStart(2,'0')
  return <div className={`mission-clock ${seconds<120?'critical':''}`}><small>NETWORK COLLAPSE IN</small><b>{m}:{s}</b><span>{seconds<120?'LAST PACKETS':'TRACE ACTIVE'}</span></div>
 }
+
+export function SynoraIntro({completed}:{completed:number}) {
+  const [show,setShow]=useState(false)
+  useEffect(()=>{ if(!sessionStorage.getItem('synora-intro-seen')) setShow(true) },[])
+  if(!show) return null
+  const close=()=>{sessionStorage.setItem('synora-intro-seen','1');setShow(false)}
+  return <div className="synora-intro" role="dialog" aria-label="Introduzione SYNORA">
+    <div className="intro-noise"/><div className="intro-scan"/>
+    <div className="intro-core"><span>YEAR 2047 · SYNORA CITY</span><b>SYNORA</b><small>THE PLAN OF CONNECTED WORLDS</small><div className="intro-status">UNKNOWN NETWORK FAILURE DETECTED</div><div className="intro-progress"><i style={{width:`${Math.min(92,24+completed*8)}%`}}/></div><em>NETWORK STATUS · {completed<3?'CRITICAL':'DEGRADED'}</em><button onClick={close}>ENTER THE CITY <strong>→</strong></button></div>
+  </div>
+}
+
+export function NetworkWeather({errors,hints,completed}:{errors:number;hints:number;completed:number}) {
+  const level=errors>=7?'CRITICAL':errors>=4?'UNSTABLE':errors>=1?'DISTURBED':'STABLE'
+  const icon=level==='CRITICAL'?'◉':level==='UNSTABLE'?'◌':level==='DISTURBED'?'◍':'○'
+  return <div className={`network-weather weather-${level.toLowerCase()}`}><div className="weather-icon">{icon}</div><div><span>NETWORK WEATHER</span><b>{level}</b><small>signal {Math.max(18,96-errors*9)}% · nodes {completed}/8 · hints {hints}</small></div></div>
+}
+
+export function NexusPresence({roomId}:{roomId:number}) {
+ const [pulse,setPulse]=useState(false)
+ useEffect(()=>{const t=setInterval(()=>setPulse(v=>!v),2200);return()=>clearInterval(t)},[])
+ return <div className={`nexus-presence ${pulse?'pulse':''}`}><div className="nexus-avatar"><span>◉</span><i/></div><div><b>NEXUS</b><small>ADVISORY CORE · ONLINE</small></div><em>“La rete parla attraverso le anomalie.”</em></div>
+}
+
+export function RadioTransmission({roomId}:{roomId:number}) {
+ const [open,setOpen]=useState(false)
+ const messages=[
+  'R3 non risponde al segmento 60. Controllate il percorso prima di modificare la configurazione.',
+  'Il nodo di indirizzamento mostra una sovrapposizione. Cercate il confine esatto della subnet.',
+  'Riceviamo traffico su un prefisso che non dovrebbe essere annunciato da questo core.',
+  'Il probe raggiunge il primo hop. Il silenzio compare dopo R2.',
+  'Gi0/2 è tornata online, ma la rotta non è ancora verificata.',
+  'VLAN 30 non attraversa il trunk. Il broadcast resta confinato.',
+  'Il percorso ridondante è pronto. Non significa che debba essere attivo.',
+  'Il terminale richiede una sequenza precisa. Un comando fuori contesto può cambiare il risultato.'
+ ]
+ return <div className="radio-transmission"><button onClick={()=>setOpen(v=>!v)}><span>◉ INCOMING TRANSMISSION · R{roomId}</span><b>{open?'CLOSE':'DECODE'}</b></button>{open&&<div className="radio-body"><div className="radio-wave">▁▂▃▅▇▅▃▂▁▂▅▇▅▃</div><p>“{messages[roomId-1]}”</p><small>CHANNEL 07 · SYNORA CONTROL · ENCRYPTED VOICE LOG</small></div>}</div>
+}
+
+export function BlackoutMode({roomId}:{roomId:number}) {
+ const [on,setOn]=useState(false)
+ return <section className={`blackout-mode ${on?'active':''}`}><div className="blackout-head"><div><span className="eyebrow">EMERGENCY NETWORK MODE</span><h3>BLACKOUT PROTOCOL</h3></div><button onClick={()=>setOn(v=>!v)}>{on?'RESTORE LIGHTS':'ACTIVATE'}</button></div>{on&&<div className="blackout-terminal"><div className="terminal-line">CORE POWER ........ <b>17%</b></div><div className="terminal-line">VISIBLE SERVICES .. <b>03</b></div><div className="terminal-line">PING .............. <b>READY</b></div><div className="terminal-line">TRACEROUTE ........ <b>READY</b></div><div className="terminal-line">ARP TABLE ......... <b>LOCKED</b></div><div className="terminal-prompt">SYNORA:{String(roomId).padStart(2,'0')}:&gt; TRACE THE FAILURE_</div></div>}</section>
+}
+
+export function PacketVision({roomId}:{roomId:number}) {
+ const [step,setStep]=useState(0)
+ const layers=['APPLICATION','TCP :443','IP DESTINATION','ETHERNET FRAME','NEXT HOP','DESTINATION']
+ return <section className="packet-vision"><div className="packet-vision-head"><div><span className="eyebrow">PACKET VISION · DISTRICT 0{roomId}</span><h3>See what the packet sees.</h3></div><button onClick={()=>setStep(v=>(v+1)%layers.length)}>TRACE NEXT HOP</button></div><div className="vision-flow">{layers.map((x,i)=><div key={x} className={`vision-layer ${i<=step?'seen':''}`}><span>{String(i+1).padStart(2,'0')}</span><b>{x}</b><i>{i<3?'HEADER':'FORWARDING'}</i></div>)}</div><div className="vision-caption">{step===0?'Ready for inspection.':step===layers.length-1?'TRACE COMPLETE · PACKET DELIVERED':'Packet advanced to '+layers[step]}</div></section>
+}
+
+export function IncidentLog({roomId,errors}:{roomId:number;errors:number}) {
+ const logs=[`R${roomId} · anomaly detector armed`,`TRACE SYN-${roomId}7F-A92 opened`,`interface observation registered`,`routing consistency check pending`,`field operator entered district`,`packet trace synchronized`,`NEXUS advisory issued`,`incident state updated`]
+ return <section className="incident-log"><div className="eyebrow">INCIDENT LOG · LIVE</div><div className="log-stream">{logs.slice(0,Math.min(logs.length,3+errors)).map((x,i)=><div key={x}><time>0{roomId}:{17+i}:0{i}</time><span>{x}</span><b>{i===1?'TRACE':'OK'}</b></div>)}</div></section>
+}
+
+export function HiddenClues({roomId}:{roomId:number}) {
+ const [found,setFound]=useState<string[]>([])
+ const clues=[['MAC-7F','7F:A9:22:01'],['PORT-443','443/TCP'],['TRACE-A2','A2-17-R3']]
+ const collect=(id:string)=>setFound(v=>v.includes(id)?v:v.concat(id))
+ return <section className="hidden-clues"><div><span className="eyebrow">UNINDEXED OBJECTS</span><h3>Qualcosa è rimasto fuori dal rapporto.</h3></div><div className="clue-row">{clues.map(([id,val])=><button key={id} className={found.includes(id)?'found':''} onClick={()=>collect(id)}><span>{found.includes(id)?'◆':'◇'}</span><b>{found.includes(id)?val:'UNKNOWN OBJECT'}</b><small>{id}</small></button>)}</div><p>{found.length===0?'Tre frammenti non indicizzati sono nascosti nel campo.':'Frammenti recuperati: '+found.length+'/3 · Conserva le tracce: potrebbero avere un significato più avanti.'}</p></section>
+}
+
+export function MetaStory({completed}:{completed:number}) {
+ const fragments=['QUALCOSA HA CAMBIATO GLI INDIRIZZI.','QUALCUNO HA APERTO UNA ROTTA.','IL TRAFFICO HA SEGUITO UNA STRADA DIVERSA.','LA RETE HA COMINCIATO A RICORDARE.','LE VLAN NON SONO PIÙ ISOLATE.','IL CORE HA VISTO IL CAMBIAMENTO.','LA RIDONDANZA NASCONDE UNA TRACCIA.','IL TERMINALE SA GIÀ COSA CERCARE.']
+ return <section className="meta-story"><div className="eyebrow">SYNORA // MEMORY OF THE CITY</div><h3>La storia emerge dai distretti.</h3><div className="story-fragments">{fragments.map((x,i)=><div key={x} className={i<completed?'revealed':''}><span>{String(i+1).padStart(2,'0')}</span><p>{i<completed?x:'••••••••••••••••••••'}</p></div>)}</div></section>
+}
+
+export function TechnicianSignature({completed,errors,hints}:{completed:number;errors:number;hints:number}) {
+ if(completed<8)return null
+ const profile=errors<=2?'NETWORK ARCHITECT':errors<=6?'FORENSIC OPERATOR':'NETWORK SURVIVOR'
+ return <section className="technician-signature"><div className="signature-card"><span className="eyebrow">SYNORA NETWORK REPORT</span><h3>{profile}</h3><div className="signature-id">TECHNICIAN ID · 7F-{String(completed*17+errors).padStart(3,'0')}</div><div className="signature-stats"><span>DISTRICTS <b>{completed}/8</b></span><span>ANOMALIES <b>{errors}</b></span><span>HINTS <b>{hints}</b></span><span>TRACES <b>{completed*2+4}</b></span></div><div className="signature-line">TRACE COMPLETE · SYNORA REMEMBERS</div></div></section>
+}
+
+export function ReturnMemory({completed}:{completed:number}) {
+ const [back,setBack]=useState(false)
+ useEffect(()=>{if(localStorage.getItem('synora-returned')) setBack(true); else localStorage.setItem('synora-returned','1')},[])
+ if(!back)return null
+ return <div className="return-memory"><span>WELCOME BACK</span><b>SYNORA REMEMBERS YOUR LAST TRACE.</b><small>{completed}/8 nodes are still online.</small></div>
+}

@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { ROOMS } from '@/lib/game'
 import LogoutButton from '@/components/logout-button'
-import { SynoraCityMap, SynoraConsole, SynoraArtifactArchive, SynoraFinale, IncidentEvent, Nexus } from '@/components/synora-experience'
+import { SynoraCityMap, SynoraConsole, SynoraArtifactArchive, SynoraFinale, IncidentEvent, Nexus, SynoraIntro, NetworkWeather, NexusPresence, RadioTransmission, BlackoutMode, PacketVision, IncidentLog, HiddenClues, MetaStory, TechnicianSignature, ReturnMemory } from '@/components/synora-experience'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,7 +20,7 @@ export default async function SynoraDashboard() {
   const hints = progress?.hints_used ?? 0
   const activeRoom = ROOMS[current - 1]
 
-  return <main className="synora-shell cinematic-dashboard">
+  return <main className="synora-shell cinematic-dashboard"><SynoraIntro completed={completed}/><ReturnMemory completed={completed}/>
     <div className="grid-bg"/><div className="scanlines"/><div className="aurora aurora-a"/><div className="aurora aurora-b"/>
     <div className="city-dust" aria-hidden="true">{Array.from({length:34},(_,i)=><i key={i} style={{'--i':i} as React.CSSProperties}/>)}</div>
     <header className="topbar cinematic-topbar">
@@ -39,7 +39,7 @@ export default async function SynoraDashboard() {
         <div className="hero-core"><div className="core-orbit orbit-a"/><div className="core-orbit orbit-b"/><div className="core-orbit orbit-c"/><div className="core-sphere"><span>SYNORA</span><b>{String(Math.max(0,completed)).padStart(2,'0')}</b><small>NODES ONLINE</small></div><div className="core-signal signal-1">PACKETS <b>STABLE</b></div><div className="core-signal signal-2">LATENCY <b>17ms</b></div><div className="core-signal signal-3">TRACE <b>ACTIVE</b></div></div>
       </div>
 
-      <SynoraConsole completed={completed} errors={errors} hints={hints}/>
+      <NetworkWeather completed={completed} errors={errors} hints={hints}/><SynoraConsole completed={completed} errors={errors} hints={hints}/><NexusPresence roomId={current}/><RadioTransmission roomId={current}/>
 
       <div className="command-grid">
         <section className="district-terminal">
@@ -55,8 +55,8 @@ export default async function SynoraDashboard() {
         </aside>
       </div>
 
-      <SynoraArtifactArchive completed={completed}/>
-      <SynoraFinale completed={completed} errors={errors} hints={hints}/>
+      <PacketVision roomId={current}/><BlackoutMode roomId={current}/><div className="experience-grid"><IncidentLog roomId={current} errors={errors}/><HiddenClues roomId={current}/></div><MetaStory completed={completed}/><SynoraArtifactArchive completed={completed}/>
+      <SynoraFinale completed={completed} errors={errors} hints={hints}/><TechnicianSignature completed={completed} errors={errors} hints={hints}/>
     </section>
   </main>
 }

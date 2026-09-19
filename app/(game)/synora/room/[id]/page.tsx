@@ -2,7 +2,7 @@ import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { ROOMS } from '@/lib/game'
 import RoomChallenge from '@/components/rooms/room-challenge'
-import { IncidentEvent, MissionClock, Nexus, PacketBlackBox } from '@/components/synora-experience'
+import { IncidentEvent, MissionClock, Nexus, PacketBlackBox, NetworkWeather, NexusPresence, RadioTransmission, BlackoutMode, PacketVision, IncidentLog } from '@/components/synora-experience'
 
 export default async function RoomPage({ params }: { params: Promise<{id:string}> }) {
   const {id} = await params; const roomId=Number(id); const room=ROOMS.find(r=>r.id===roomId)
@@ -12,6 +12,6 @@ export default async function RoomPage({ params }: { params: Promise<{id:string}
   if(roomId>(progress?.current_room??1)) redirect('/synora')
   return <main className="synora-shell"><div className="grid-bg"/><div className="scanlines"/><div className="aurora aurora-a"/>
     <header className="topbar"><div className="brand"><span className="brand-mark">S</span> SYNORA <i>//</i> DISTRICT 0{roomId}</div><div className="status"><span className="dot"/> TRACE ACTIVE</div></header>
-    <section className={`room room-theme-${roomId}`}><div className="room-crumb"><a href="/synora">← MAPPA</a><span>/</span> DISTRETTO 0{roomId}</div><div className="room-hero"><div><div className="eyebrow">DISTRETTO 0{roomId} · {room.topic}</div><h1>{room.name}</h1><p>{room.subtitle}</p></div><div className="room-index"><span>NODE</span><b>0{roomId}</b><small>OF 08</small></div></div><div className="lore">{room.lore}</div><Nexus roomId={roomId}/><IncidentEvent roomId={roomId}/><PacketBlackBox roomId={roomId}/><MissionClock roomId={roomId}/><RoomChallenge roomId={roomId}/></section>
+    <section className={`room room-theme-${roomId}`}><div className="room-crumb"><a href="/synora">← MAPPA</a><span>/</span> DISTRETTO 0{roomId}</div><div className="room-hero"><div><div className="eyebrow">DISTRETTO 0{roomId} · {room.topic}</div><h1>{room.name}</h1><p>{room.subtitle}</p></div><div className="room-index"><span>NODE</span><b>0{roomId}</b><small>OF 08</small></div></div><div className="lore">{room.lore}</div><NetworkWeather completed={progress?.completed_rooms??0} errors={0} hints={0}/><NexusPresence roomId={roomId}/><RadioTransmission roomId={roomId}/><IncidentEvent roomId={roomId}/><PacketBlackBox roomId={roomId}/><PacketVision roomId={roomId}/><BlackoutMode roomId={roomId}/><IncidentLog roomId={roomId} errors={0}/><MissionClock roomId={roomId}/><RoomChallenge roomId={roomId}/></section>
   </main>
 }
