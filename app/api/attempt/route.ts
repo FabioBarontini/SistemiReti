@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 
 const expected: Record<number, Record<string,string>> = {
   1:{A:'Trasporto',B:'Collegamento dati',C:'Rete',D:'Applicazione',order:'Collegamento → Rete → Trasporto → Applicazione'},
-  2:{p0:'/26',p1:'/25',p2:'/27',p3:'/28',r0:'192.168.40.128',r1:'192.168.40.0',r2:'192.168.40.192',r3:'192.168.40.224',first:'192.168.40.129'},
+  2:{p0:'/26',p1:'/25',p2:'/27',p3:'/28',r0:'192.168.40.128',r1:'192.168.40.0',r2:'192.168.40.192',r3:'192.168.40.224',first:'192.168.40.1'},
   3:{cidr:'172.16.32.0/22',mask:'255.255.252.0',count:'4'},
   4:{next:'10.0.1.2',def:'default route'},
   5:{err:"La rotta verso 192.168.60.0 usa un'interfaccia down",fix:'no shutdown su Gi0/2'},
