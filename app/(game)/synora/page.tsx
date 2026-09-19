@@ -5,12 +5,16 @@ import LogoutButton from '@/components/logout-button'
 
 const POS = [[13,22],[31,39],[49,20],[68,35],[42,61],[76,58],[23,78],[57,83]]
 
+export const dynamic = 'force-dynamic'
+
 export default async function SynoraDashboard() {
   const supabase = await createClient()
   const { data:{user} } = await supabase.auth.getUser()
   if (!user) redirect('/login')
-  const { data: profile } = await supabase.from('profiles').select('display_name, role').eq('id',user.id).maybeSingle()
-  const { data: progress } = await supabase.from('game_progress').select('current_room, completed_rooms, hints_used, errors').eq('user_id',user.id).maybeSingle()
+  const [{ data: profile }, { data: progress }] = await Promise.all([
+    supabase.from('profiles').select('display_name, role').eq('id', user.id).maybeSingle(),
+    supabase.from('game_progress').select('current_room, completed_rooms, hints_used, errors').eq('user_id', user.id).maybeSingle(),
+  ])
   const current = Math.min(progress?.current_room ?? 1, 8)
   const completed = progress?.completed_rooms ?? 0
   return <main className="synora-shell"><div className="grid-bg"/><div className="scanlines"/><div className="aurora aurora-a"/><div className="aurora aurora-b"/>
