@@ -16,7 +16,8 @@ create table if not exists public.game_progress (
   completed_rooms integer not null default 0 check (completed_rooms between 0 and 8),
   hints_used integer not null default 0,
   errors integer not null default 0,
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  score integer not null default 0 check (score >= 0)
 );
 
 create table if not exists public.attempts (
@@ -33,9 +34,18 @@ create table if not exists public.room_progress (
   room_id integer not null check (room_id between 1 and 8),
   status text not null default 'locked' check (status in ('locked','active','completed')),
   key_code text,
+  score integer not null default 0 check (score >= 0),
+  hints_used integer not null default 0,
+  started_at timestamptz,
   completed_at timestamptz,
   primary key(user_id,room_id)
 );
+
+-- Safe migration for existing SYNORA installations
+alter table public.game_progress add column if not exists score integer not null default 0;
+alter table public.room_progress add column if not exists score integer not null default 0;
+alter table public.room_progress add column if not exists started_at timestamptz;
+alter table public.room_progress add column if not exists hints_used integer not null default 0;
 
 alter table public.profiles enable row level security;
 alter table public.game_progress enable row level security;
@@ -69,16 +79,28 @@ begin
 end; $$;
 
 create or replace function public.complete_room(p_user_id uuid,p_room_id integer,p_key text)
+returns integer language plpgsql security definer set search_path=public as $$
+declare
+  room_errors integer;
+  room_hints integer;
+  elapsed_seconds integer;
+  room_score integer;
+begin
+  if auth.uid() <> p_user_id then raise exception 'not allowed'; end if;
+  select count(*)::integer into room_errors from public.attempts where user_id=p_user_id and room_id=p_room_id and correct=false;
+  select hints_used into room_hints from public.room_progress where user_id=p_user_id and room_id=p_room_id;
+  select greatest(0,extract(epoch from (now()-started_at))::integer) into elapsed_seconds from public.room_progress where user_id=p_user_id and room_id=p_room_id;
+  room_score := greatest(100,1000 - least(room_errors,10)*75 - least(coalesce(room_hints,0),5)*60 + greatest(0,250 - floor(elapsed_seconds/30)::integer*5));
+  update public.room_progress set status='completed',key_code=p_key,score=room_score,completed_at=now() where user_id=p_user_id and room_id=p_room_id and status<>'completed';
+  update public.game_progress set completed_rooms=least(completed_rooms+1,8),current_room=least(greatest(current_room,p_room_id+1),8),score=score+room_score,updated_at=now() where user_id=p_user_id;
+  update public.room_progress set status='active',started_at=now() where user_id=p_user_id and room_id=p_room_id+1 and status='locked';
+  return room_score;
+end; $$;
+
+create or replace function public.register_hint(p_user_id uuid,p_room_id integer)
 returns void language plpgsql security definer set search_path=public as $$
 begin
   if auth.uid() <> p_user_id then raise exception 'not allowed'; end if;
-  update public.room_progress set status='completed', key_code=p_key, completed_at=now() where user_id=p_user_id and room_id=p_room_id;
-  update public.game_progress set completed_rooms=least(completed_rooms+1,8),current_room=least(greatest(current_room,p_room_id+1),8),updated_at=now() where user_id=p_user_id;
-  update public.room_progress set status='active' where user_id=p_user_id and room_id=p_room_id+1 and status='locked';
+  update public.game_progress set hints_used=hints_used+1,updated_at=now() where user_id=p_user_id;
+  update public.room_progress set hints_used=hints_used+1 where user_id=p_user_id and room_id=p_room_id and status='active';
 end; $$;
-
--- Fix typo-safe replacement: the previous statement intentionally has a leading 'a' only in this comment.
-
-
--- Teacher read access. Assign role='teacher' manually to the teacher account.
-create policy "teachers read all progress" on public.game_progress for select using (exists (select 1 from public.profiles p where p.id=auth.uid() and p.role='teacher'));

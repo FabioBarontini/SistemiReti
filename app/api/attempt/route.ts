@@ -50,6 +50,7 @@ export async function POST(req: Request){
   }
   await supabase.from('attempts').insert({user_id:user.id,room_id:Number(roomId),answer:JSON.stringify(answers),correct:ok})
   if(!ok){await supabase.rpc('register_error',{p_user_id:user.id}); return NextResponse.json({success:false,message:'TRACCIA INCOERENTE — almeno un passaggio non è compatibile con le altre evidenze.'})}
-  await supabase.rpc('complete_room',{p_user_id:user.id,p_room_id:Number(roomId)})
-  return NextResponse.json({success:true,message:`TRACCIA CORRETTA — CHIAVE RECUPERATA: ${keys[Number(roomId)]}`})
+  const completed=await supabase.rpc('complete_room',{p_user_id:user.id,p_room_id:Number(roomId),p_key:keys[Number(roomId)]})
+  if(completed.error) return NextResponse.json({success:false,message:'CORE NON DISPONIBILE — riprovare tra poco.'},{status:500})
+  return NextResponse.json({success:true,score:completed.data,message:`TRACCIA CORRETTA — CHIAVE RECUPERATA: ${keys[Number(roomId)]} · +${completed.data} PUNTI`})
 }

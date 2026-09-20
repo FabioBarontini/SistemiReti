@@ -49,6 +49,7 @@ export function Nexus({roomId, errors=0, completed=0}:{roomId:number;errors?:num
   ])
   const [typing,setTyping]=useState(false)
   const [turn,setTurn]=useState(0)
+  const [hintUsed,setHintUsed]=useState(false)
 
   const roomHints:Record<number,string[]>={
     1:[
@@ -138,6 +139,8 @@ export function Nexus({roomId, errors=0, completed=0}:{roomId:number;errors?:num
 
   const ask=()=>{
     const q=question.trim(); if(!q||typing)return
+    const needsHint=/aiuto|non capisco|non so|bloccato|bloccata|difficile|confuso|confusa|soluzione|risposta|cosa devo|da dove|che faccio/i.test(q)
+    if(needsHint&&!hintUsed){ setHintUsed(true); fetch('/api/hint',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({roomId})}).catch(()=>{}) }
     setMessages(v=>v.concat({from:'user',text:q})); setQuestion(''); setTyping(true); setTurn(v=>v+1)
     window.setTimeout(()=>{setMessages(v=>v.concat({from:'nexus',text:reply(q)}));setTyping(false)},420)
   }

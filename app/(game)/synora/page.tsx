@@ -13,13 +13,14 @@ export default async function SynoraDashboard() {
 
   const [{ data: profile }, { data: progress }] = await Promise.all([
     supabase.from('profiles').select('display_name, role').eq('id', user.id).maybeSingle(),
-    supabase.from('game_progress').select('current_room, completed_rooms, hints_used, errors').eq('user_id', user.id).maybeSingle(),
+    supabase.from('game_progress').select('current_room, completed_rooms, hints_used, errors, score').eq('user_id', user.id).maybeSingle(),
   ])
 
   const current = Math.min(progress?.current_room ?? 1, 8)
   const completed = progress?.completed_rooms ?? 0
   const errors = progress?.errors ?? 0
   const hints = progress?.hints_used ?? 0
+  const score = progress?.score ?? 0
   const activeRoom = ROOMS[current - 1]
 
   return (
@@ -52,7 +53,7 @@ export default async function SynoraDashboard() {
           <p>La rete di Synora non è soltanto un sistema. È una città viva. Ogni pacchetto attraversa le sue strade, ogni rotta apre un passaggio, ogni errore lascia una cicatrice.</p>
           <div className="hero-actions">
             <a href={`/synora/room/${current}`} className="enter-button"><span>ENTRA NEL DISTRETTO {String(current).padStart(2, '0')}</span><b>→</b></a>
-            <div className="hero-status"><span>ACTIVE NODE</span><strong>{activeRoom?.name ?? 'CORE NETWORK'}</strong></div>
+            <div className="hero-status"><span>ACTIVE NODE</span><strong>{activeRoom?.name ?? 'CORE NETWORK'}</strong><small>SCORE · {score.toLocaleString('it-IT')} PT</small></div>
           </div>
         </div>
 
