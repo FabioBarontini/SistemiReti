@@ -31,17 +31,9 @@ export async function POST(req: Request){
   const adv=advancedExpected[Number(roomId)]||{}
   const fullExp={...exp,...adv}
   const norm=(x:unknown)=>String(x??'').toLowerCase().trim().replace(/\s+/g,' ').replace(/→/g,'->')
-  const significant=(x:string)=>norm(x).split(/[^a-z0-9/.-]+/).filter(t=>t.length>2 && !['che','con','una','uno','per','del','dei','della','delle','sono','verso','dopo','quale','quali','come','deve','deve','non','può','puo','tra','nel','nella','sul','sui','gli','alla','dove','anche'].includes(t))
   const matches=(key:string, expectedValue:string, actual:unknown)=>{
     const got=norm(actual); const expn=norm(expectedValue)
-    if(!got) return false
-    if(got===expn) return true
-    // Le prove aperte accettano formulazioni diverse purché contengano i concetti tecnici necessari.
-    if(expectedValue.length>=42){
-      const tokens=[...new Set(significant(expectedValue))]
-      return tokens.filter(t=>got.includes(t)).length>=Math.max(2,Math.ceil(tokens.length*.58))
-    }
-    return false
+    return Boolean(got) && got===expn
   }
   let ok=Object.entries(fullExp).every(([k,v])=>matches(k,v,answers?.[k]))
   if(Number(roomId)===8){

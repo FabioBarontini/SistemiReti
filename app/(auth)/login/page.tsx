@@ -17,7 +17,8 @@ export default function LoginPage() {
     e.preventDefault(); setError(''); setBusy(true)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) { setError('ACCESSO NEGATO — credenziali non riconosciute.'); setBusy(false); return }
-    router.push('/synora'); router.refresh()
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', (await supabase.auth.getUser()).data.user?.id ?? '').maybeSingle()
+    router.push(profile?.role === 'teacher' ? '/admin' : '/synora'); router.refresh()
   }
 
   return <main className="synora-shell login-page"><div className="grid-bg"/><div className="scanlines"/><div className="aurora aurora-a"/><div className="aurora aurora-b"/>
@@ -42,7 +43,7 @@ export default function LoginPage() {
             <button className="cta" disabled={busy}>{busy ? 'CONNESSIONE…' : 'ENTRA IN SYNORA  →'}</button>
             {error && <div className="error">{error}</div>}
           </form>
-          <div className="auth-switch">Non hai ancora un accesso? <Link href="/register">CREA IDENTITÀ →</Link></div>
+          <div className="auth-switch">Non hai ancora un accesso? <Link href="/register">CREA IDENTITÀ →</Link></div><div className="auth-switch admin-entry"><Link href="/admin/login">ACCESSO DOCENTE · CONTROL ROOM →</Link></div>
           <div className="auth-note"><span className="tiny-dot"/> SESSIONE PERSISTENTE · STATO SALVATO SUL SERVER</div>
         </div>
       </div>
