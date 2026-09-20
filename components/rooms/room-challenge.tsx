@@ -33,6 +33,7 @@ export default function RoomChallenge({roomId}:{roomId:number}){
  const [expired,setExpired]=useState(false)
  const [seconds,setSeconds]=useState(20*60+roomId*17)
  useEffect(()=>{ const id=window.setInterval(()=>setSeconds(v=>{ if(v<=1){window.clearInterval(id);setExpired(true);return 0} return v-1}),1000); return()=>window.clearInterval(id)},[])
+ useEffect(()=>{ const ping=()=>{void fetch('/api/heartbeat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({roomId})}).catch(()=>{})}; ping(); const id=window.setInterval(ping,10000); return()=>window.clearInterval(id)},[roomId])
  const mm=Math.floor(seconds/60).toString().padStart(2,'0'); const ss=(seconds%60).toString().padStart(2,'0')
  const set=(k:string,v:string)=>{setA(x=>({...x,[k]:v}));setMsg('')}
  const submit=async()=>{if(expired||busy)return;setBusy(true);setMsg('VERIFICA DELLA TRACCIA SUL CORE…');const res=await fetch('/api/attempt',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({roomId,answers:a})});const data=await res.json();setBusy(false);if(data.success){setSuccessKey(keys[roomId]);setStep(3);setMsg('')}else setMsg(data.message||'TRACCIA INCOERENTE')}

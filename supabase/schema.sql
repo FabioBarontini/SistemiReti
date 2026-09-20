@@ -104,3 +104,67 @@ begin
   update public.game_progress set hints_used=hints_used+1,updated_at=now() where user_id=p_user_id;
   update public.room_progress set hints_used=hints_used+1 where user_id=p_user_id and room_id=p_room_id and status='active';
 end; $$;
+
+-- Live monitoring for the teacher Control Room.
+-- Teachers can read the operational state of all students, while students
+-- keep the existing own-row permissions.
+create or replace function public.is_teacher()
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'teacher'
+  );
+$$;
+
+drop policy if exists "teachers can read profiles" on public.profiles;
+create policy "teachers can read profiles" on public.profiles
+for select using (auth.uid() = id or public.is_teacher());
+
+drop policy if exists "teachers can read progress" on public.game_progress;
+create policy "teachers can read progress" on public.game_progress
+for select using (auth.uid() = user_id or public.is_teacher());
+
+drop policy if exists "teachers can read room progress" on public.room_progress;
+create policy "teachers can read room progress" on public.room_progress
+for select using (auth.uid() = user_id or public.is_teacher());
+
+-- Mark a district as active and start its server-side clock.
+create or replace function public.start_room(p_user_id uuid, p_room_id integer)
+returns void language plpgsql security definer set search_path=public as $$
+begin
+  if auth.uid() <> p_user_id then raise exception 'not allowed'; end if;
+  if p_room_id < 1 or p_room_id > 8 then raise exception 'invalid room'; end if;
+
+  update public.room_progress
+  set status='active', started_at=coalesce(started_at, now())
+  where user_id=p_user_id and room_id=p_room_id
+    and p_room_id <= (select current_room from public.game_progress where user_id=p_user_id)
+    and status <> 'completed';
+
+  update public.game_progress
+  set updated_at=now()
+  where user_id=p_user_id;
+end; $$;
+
+-- Lightweight heartbeat used while a student is working in a district.
+create or replace function public.heartbeat(p_user_id uuid, p_room_id integer default null)
+returns void language plpgsql security definer set search_path=public as $$
+begin
+  if auth.uid() <> p_user_id then raise exception 'not allowed'; end if;
+
+  update public.game_progress
+  set updated_at=now()
+  where user_id=p_user_id;
+
+  if p_room_id is not null and p_room_id between 1 and 8 then
+    update public.room_progress
+    set started_at=coalesce(started_at, now())
+    where user_id=p_user_id and room_id=p_room_id and status='active';
+  end if;
+end; $$;
+
